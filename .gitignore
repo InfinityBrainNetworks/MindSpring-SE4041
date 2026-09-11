@@ -1,0 +1,22 @@
+# Gradle / Android Studio
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+*.iml
+.cxx/
+.externalNativeBuild/
+captures/
+.navigation/
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# OS
+.DS_Store
+Thumbs.db

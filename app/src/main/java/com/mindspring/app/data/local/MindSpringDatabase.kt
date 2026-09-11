@@ -1,6 +1,7 @@
 package com.mindspring.app.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Insert
@@ -200,8 +201,11 @@ interface JournalDao {
         UserEntity::class, AreaEntity::class, ProjectEntity::class, HabitEntity::class, HabitMarkEntity::class,
         TaskEntity::class, MoodEntity::class, GratitudeEntity::class, JournalEntity::class,
     ],
-    version = 1,
+    version = 3,
     exportSchema = true,
+    // Room derives the ALTER TABLEs from the saved schemas.
+    // 2: tasks gain an alert time and style. 3: habit reminders gain a style.
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 @TypeConverters(Converters::class)
 abstract class MindSpringDatabase : RoomDatabase() {

@@ -3,6 +3,7 @@ package com.mindspring.app.ui.screens.habits
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mindspring.app.AppContainer
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.Habit
 import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
@@ -149,12 +150,16 @@ data class HabitEditorState(
     val reminderTime: LocalTime = LocalTime.of(8, 0),
     val active: Boolean = true,
     val createdAt: LocalDate = LocalDate.now(),
+    val reminderStyle: AlertStyle = AlertStyle.Reminder,
     val saved: Boolean = false,
 ) {
     val isEditing: Boolean get() = id != 0L
     val canSave: Boolean get() = name.isNotBlank() && (frequency != HabitFrequency.Custom || customDays.isNotEmpty())
 
-    fun toHabit() = Habit(id, name.trim(), areaId, subArea.trim(), icon, frequency, customDays, target.trim(), reminderEnabled, reminderTime, active, createdAt)
+    fun toHabit() = Habit(
+        id, name.trim(), areaId, subArea.trim(), icon, frequency, customDays, target.trim(), reminderEnabled, reminderTime, active, createdAt,
+        reminderStyle,
+    )
 }
 
 class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : ViewModel() {
@@ -175,7 +180,7 @@ class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : View
                 app.habits.habit(habitId).first()?.let { h ->
                     _state.value = HabitEditorState(
                         h.id, h.name, h.areaId, h.subArea, h.icon, h.frequency, h.customDays, h.target,
-                        h.reminderEnabled, h.reminderTime, h.active, h.createdAt,
+                        h.reminderEnabled, h.reminderTime, h.active, h.createdAt, h.reminderStyle,
                     )
                 }
             }
@@ -191,6 +196,7 @@ class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : View
     fun onTarget(v: String) = _state.update { it.copy(target = v.take(24)) }
     fun onReminderEnabled(v: Boolean) = _state.update { it.copy(reminderEnabled = v) }
     fun onReminderTime(v: LocalTime) = _state.update { it.copy(reminderTime = v) }
+    fun onReminderStyle(v: AlertStyle) = _state.update { it.copy(reminderStyle = v) }
     fun onActive(v: Boolean) = _state.update { it.copy(active = v) }
 
     fun save() {

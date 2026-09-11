@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.Habit
 import com.mindspring.app.data.model.Repeat
 import com.mindspring.app.data.model.Task
@@ -173,6 +176,20 @@ fun TaskRow(
                 if (task.repeat != Repeat.None) {
                     Spacer(Modifier.width(4.dp))
                     Icon(Icons.Rounded.Repeat, contentDescription = task.repeat.label, tint = c.textTertiary, modifier = Modifier.size(13.dp))
+                }
+                task.upcomingAlert()?.let { at ->
+                    Spacer(Modifier.width(6.dp))
+                    Icon(
+                        if (task.alertStyle == AlertStyle.Alarm) Icons.Rounded.Alarm else Icons.Rounded.NotificationsActive,
+                        contentDescription = "${task.alertStyle.label} ${Fmt.alert(at, today)}",
+                        tint = c.tealInk,
+                        modifier = Modifier.size(13.dp),
+                    )
+                    // Today's alerts show their time; later ones just the bell.
+                    if (at.toLocalDate() == today) {
+                        Spacer(Modifier.width(2.dp))
+                        Text(Fmt.time(at.toLocalTime()), style = MaterialTheme.typography.labelSmall, color = c.tealInk, maxLines = 1)
+                    }
                 }
             }
         }

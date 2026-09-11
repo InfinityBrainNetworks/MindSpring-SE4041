@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.Logout
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CloudDownload
@@ -137,7 +138,7 @@ class ProfileViewModel(private val app: AppContainer) : ViewModel() {
 }
 
 @Composable
-fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onLoggedOut: () -> Unit) {
+fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () -> Unit, onLoggedOut: () -> Unit) {
     val vm = appViewModel { ProfileViewModel(it) }
     val user by vm.user.collectAsStateWithLifecycle()
     val theme by vm.theme.collectAsStateWithLifecycle()
@@ -205,6 +206,8 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onLoggedOut: () -
                         if (digest.enabled) "Tasks ${Fmt.time(digest.time)}" else null,
                     ).joinToString(" · ").ifEmpty { "Off" },
                 ) { dialog = ProfileDialog.Reminders }
+                RowDivider()
+                SettingsRow(Icons.Outlined.Alarm, "Alerts & sounds", detail = "Task alarms, tones, vibration and snooze", onClick = onOpenAlerts)
             }
 
             MsCard(Modifier.fillMaxWidth().appear(2), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -270,7 +273,7 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onLoggedOut: () -
             title = { Text("About MindSpring") },
             text = {
                 Text(
-                    "Version 2.0\n\nMindSpring brings your habits, tasks and moods together and shows you which routines " +
+                    "Version 2.1\n\nMindSpring brings your habits, tasks and moods together and shows you which routines " +
                         "go with your better days. Everything stays on this device.\n\n" +
                         "MindSpring is a self-reflection tool, not a medical product. If you are struggling, please reach out " +
                         "to a qualified professional or a local support service.",

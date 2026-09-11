@@ -43,6 +43,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mindspring.app.AppContainer
+import com.mindspring.app.reminders.AlertKind
+import com.mindspring.app.reminders.AlertTarget
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.AmbientBackground
 import com.mindspring.app.ui.components.LocalSnackbar
@@ -67,6 +69,7 @@ import com.mindspring.app.ui.screens.journal.JournalListScreen
 import com.mindspring.app.ui.screens.mood.MoodCheckInScreen
 import com.mindspring.app.ui.screens.mood.MoodHistoryScreen
 import com.mindspring.app.ui.screens.onboarding.OnboardingScreen
+import com.mindspring.app.ui.screens.profile.AlertSettingsScreen
 import com.mindspring.app.ui.screens.profile.ProfileScreen
 import com.mindspring.app.ui.screens.tasks.ProjectDetailScreen
 import com.mindspring.app.ui.screens.tasks.ProjectEditorScreen
@@ -93,6 +96,7 @@ object Routes {
     const val CALM = "calm"
     const val PROFILE = "profile"
     const val AREAS = "areas"
+    const val ALERTS = "alerts"
     const val HABIT_EDITOR = "habit-editor?id={id}"
     const val HABIT_DETAIL = "habit-detail/{id}"
     const val HABIT_DONE = "habit-done/{id}"
@@ -173,8 +177,9 @@ private val popExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> Exi
     fadeOut(tween(200)) + slideOutVertically(tween(260)) { it / 18 }
 }
 
+/** [openTarget] is a task or habit to open straight away, set when the app is opened from one of its alerts. */
 @Composable
-fun MindSpringRoot() {
+fun MindSpringRoot(openTarget: AlertTarget? = null, onOpened: () -> Unit = {}) {
     val vm = appViewModel { RootViewModel(it) }
     val start by vm.startRoute.collectAsStateWithLifecycle()
     val userName by vm.userName.collectAsStateWithLifecycle()
@@ -294,10 +299,12 @@ fun MindSpringRoot() {
                         ProfileScreen(
                             onBack = back,
                             onOpenAreas = { nav.navigate(Routes.AREAS) },
+                            onOpenAlerts = { nav.navigate(Routes.ALERTS) },
                             onLoggedOut = { nav.navigate(Routes.LOGIN) { popUpTo(nav.graph.id) { inclusive = true } } },
                         )
                     }
                     composable(Routes.AREAS) { LifeAreasScreen(onBack = back) }
+                    composable(Routes.ALERTS) { AlertSettingsScreen(onBack = back) }
 
                     composable(Routes.HABIT_EDITOR, arguments = listOf(longArg("id"))) { e ->
                         HabitEditorScreen(habitId = e.optionalLong("id"), onDone = back)
@@ -353,6 +360,20 @@ fun MindSpringRoot() {
                     }
                 }
             }
+        }
+
+        // Opened from an alert: go to its task or habit once the graph is up. Signed out, there is nothing to show.
+        LaunchedEffect(openTarget, route != null) {
+            val target = openTarget ?: return@LaunchedEffect
+            if (route == null) return@LaunchedEffect
+            if (startRoute == Routes.HOME) {
+                val to = when (target.kind) {
+                    AlertKind.Task -> Routes.taskEditor(id = target.id)
+                    AlertKind.Habit -> Routes.habitDetail(target.id)
+                }
+                nav.navigate(to) { launchSingleTop = true }
+            }
+            onOpened()
         }
     }
 }

@@ -12,17 +12,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.mindspring.app.data.model.AlertStyle
+import com.mindspring.app.reminders.AlertInfo
+import com.mindspring.app.reminders.AlertKind
+import com.mindspring.app.reminders.AlertTarget
 import com.mindspring.app.ui.components.AmbientBackground
 import com.mindspring.app.ui.components.LocalSnackbar
 import com.mindspring.app.ui.components.MainTab
 import com.mindspring.app.ui.components.MsBottomBar
+import com.mindspring.app.ui.screens.alarm.AlarmScreen
 import com.mindspring.app.ui.screens.areas.LifeAreasScreen
 import com.mindspring.app.ui.screens.auth.LoginScreen
 import com.mindspring.app.ui.screens.auth.RegisterScreen
@@ -42,6 +52,7 @@ import com.mindspring.app.ui.screens.journal.JournalListScreen
 import com.mindspring.app.ui.screens.mood.MoodCheckInScreen
 import com.mindspring.app.ui.screens.mood.MoodHistoryScreen
 import com.mindspring.app.ui.screens.onboarding.OnboardingScreen
+import com.mindspring.app.ui.screens.profile.AlertSettingsScreen
 import com.mindspring.app.ui.screens.profile.ProfileScreen
 import com.mindspring.app.ui.screens.tasks.ProjectDetailScreen
 import com.mindspring.app.ui.screens.tasks.ProjectEditorScreen
@@ -49,6 +60,8 @@ import com.mindspring.app.ui.screens.tasks.TaskEditorScreen
 import com.mindspring.app.ui.screens.tasks.TasksScreen
 import com.mindspring.app.ui.theme.MindSpringTheme
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -159,8 +172,61 @@ class ScreenshotTest {
     @Test fun journal() = shoot("22_journal", tab = MainTab.Mind) { JournalListScreen({}, {}) }
     @Test fun journalEntry() = shoot("23_journal_entry") { JournalEntryScreen(LocalDate.now().minusDays(1), onDone = {}) }
     @Test fun gratitude() = shoot("24_gratitude", tab = MainTab.Mind) { GratitudeScreen(onBack = {}) }
-    @Test fun profile() = shoot("25_profile") { ProfileScreen({}, {}, {}) }
-    @Test fun profileDark() = shoot("25_profile_dark", dark = true) { ProfileScreen({}, {}, {}) }
+    @Test fun profile() = shoot("25_profile") { ProfileScreen({}, {}, {}, {}) }
+    @Test fun profileDark() = shoot("25_profile_dark", dark = true) { ProfileScreen({}, {}, {}, {}) }
+    @Test fun alertSettings() = shoot("28_alert_settings") { AlertSettingsScreen(onBack = {}) }
+    @Test fun alertSettingsDark() = shoot("28_alert_settings_dark", dark = true) { AlertSettingsScreen(onBack = {}) }
+
+    // Task 2 carries a demo alert at 9 AM tomorrow, so the editor opens with the alert section filled in.
+    @Test fun taskEditorAlarm() {
+        setScreen(dark = false, tab = null) { TaskEditorScreen(taskId = 2, projectId = null, onDone = {}) }
+        compose.onAllNodesWithText("Alarm").onFirst().performClick()
+        settle()
+        compose.onRoot().captureRoboImage("build/screenshots/11_task_editor_alarm.png")
+    }
+
+    private val sampleAlarm = AlertInfo(AlertTarget(AlertKind.Task, 5), "Submit the final APK", "Due today · Mobile App Assignment", AlertStyle.Alarm, LocalDate.now().atTime(19, 30))
+
+    @Test fun alarm() = shoot("29_alarm") {
+        AlarmScreen(sampleAlarm, 10, {}, {}, {}, {}, now = LocalDate.now().atTime(19, 30))
+    }
+
+    @Test fun alarmDark() = shoot("29_alarm_dark", dark = true) {
+        AlarmScreen(sampleAlarm, 10, {}, {}, {}, {}, now = LocalDate.now().atTime(19, 30))
+    }
+
+    @Test fun reminderOnLockScreen() = shoot("29_reminder_lock_screen") {
+        AlarmScreen(sampleAlarm.copy(style = AlertStyle.Reminder, title = "Room database and repositories", detail = "Due tomorrow · Mobile App Assignment"), 10, {}, {}, {}, {}, now = LocalDate.now().atTime(9, 0))
+    }
+
+    @Test fun habitAlarmOnLockScreen() = shoot("29_habit_alarm_dark", dark = true) {
+        AlarmScreen(
+            AlertInfo(AlertTarget(AlertKind.Habit, 3), "Morning meditation", "10 min", AlertStyle.Alarm, LocalDate.now().atTime(6, 30)),
+            10, {}, {}, {}, {}, now = LocalDate.now().atTime(6, 30),
+        )
+    }
+
+    // Habit 1 has a demo reminder; switching it to Alarm shows the choice in the editor.
+    @Test fun habitEditorAlarm() {
+        setScreen(dark = false, tab = null) { HabitEditorScreen(habitId = 1, onDone = {}) }
+        compose.onAllNodesWithText("Alarm").onFirst().performClick()
+        settle()
+        compose.onRoot().captureRoboImage("build/screenshots/06_habit_editor_alarm.png")
+    }
+
+    @Test fun alarmIsDismissedBySwipeNotTap() {
+        var stopped = false
+        setScreen(dark = false, tab = null) {
+            AlarmScreen(sampleAlarm, 10, {}, {}, { stopped = true }, {}, now = LocalDate.now().atTime(19, 30))
+        }
+        val handle = compose.onNodeWithContentDescription("Swipe to dismiss")
+        handle.performTouchInput { click(center) }
+        compose.waitForIdle()
+        assertFalse("a tap must not dismiss", stopped)
+        handle.performTouchInput { swipe(center, center + Offset(0f, -400f), durationMillis = 400) }
+        compose.waitForIdle()
+        assertTrue("a swipe dismisses", stopped)
+    }
 
     @Test fun breathingCalm() {
         compose.mainClock.autoAdvance = false

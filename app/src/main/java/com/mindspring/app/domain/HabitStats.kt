@@ -5,6 +5,7 @@ import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.MarkState
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 
@@ -58,6 +59,25 @@ object HabitStats {
      */
     fun belongsOn(habit: Habit, date: LocalDate): Boolean =
         habit.active && !date.isBefore(habit.createdAt) && (!habit.frequency.isDayBased || date.dayOfWeek in habit.days)
+
+    /**
+     * When the habit's reminder should next go off: its reminder time on the next day the habit
+     * belongs on that is not already ticked or skipped (for a Weekly or Monthly habit, not in a
+     * period already done). Null when the reminder is off or the habit is retired.
+     */
+    fun nextReminder(habit: Habit, marks: Map<LocalDate, MarkState>, now: LocalDateTime): LocalDateTime? {
+        if (!habit.active || !habit.reminderEnabled) return null
+        val today = now.toLocalDate()
+        // Two months ahead is past the end of any period a Monthly habit could already have done.
+        for (offset in 0..62L) {
+            val day = today.plusDays(offset)
+            val at = day.atTime(habit.reminderTime)
+            if (!at.isAfter(now) || !belongsOn(habit, day)) continue
+            val handled = marks[day] != null || (!habit.frequency.isDayBased && unitDone(habit, marks, day))
+            if (!handled) return at
+        }
+        return null
+    }
 
     /** The span of the unit containing [date]. */
     fun unitSpan(habit: Habit, date: LocalDate): ClosedRange<LocalDate> = when (unit(habit)) {

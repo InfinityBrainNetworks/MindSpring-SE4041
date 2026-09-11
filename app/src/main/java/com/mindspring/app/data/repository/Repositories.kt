@@ -1,5 +1,6 @@
 package com.mindspring.app.data.repository
 
+import com.mindspring.app.data.model.AlertSounds
 import com.mindspring.app.data.model.GratitudeEntry
 import com.mindspring.app.data.model.Habit
 import com.mindspring.app.data.model.HabitMark
@@ -100,7 +101,10 @@ interface SettingsRepository {
     /** Morning summary of what is due and overdue. */
     val taskDigest: Flow<ReminderSettings>
     val sessionUserId: Flow<Long?>
+    /** Tones, vibration and snooze length for reminders and task alarms. */
+    val alertSounds: Flow<AlertSounds>
     suspend fun setThemeMode(mode: ThemeMode)
+    suspend fun setAlertSounds(sounds: AlertSounds)
     suspend fun setAmbientMotion(enabled: Boolean)
     suspend fun setOnboardingDone()
     suspend fun setCheckInReminder(settings: ReminderSettings)

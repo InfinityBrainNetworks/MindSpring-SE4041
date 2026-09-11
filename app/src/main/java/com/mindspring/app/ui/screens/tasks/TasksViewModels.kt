@@ -3,6 +3,7 @@ package com.mindspring.app.ui.screens.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mindspring.app.AppContainer
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.LifeArea
 import com.mindspring.app.data.model.Priority
 import com.mindspring.app.data.model.Project
@@ -22,6 +23,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 // ---------- Tasks tab ----------
 
@@ -107,6 +111,8 @@ data class TaskEditorState(
     val doneOn: LocalDate? = null,
     val repeat: Repeat = Repeat.None,
     val createdAt: LocalDate = LocalDate.now(),
+    val alertAt: LocalDateTime? = null,
+    val alertStyle: AlertStyle = AlertStyle.Reminder,
     val saved: Boolean = false,
     val showErrors: Boolean = false,
 ) {
@@ -115,7 +121,13 @@ data class TaskEditorState(
     val titleError: String? get() = if (title.isBlank()) "Give the task a name." else null
     val canSave: Boolean get() = titleError == null && dateError == null
 
-    fun toTask() = Task(id, title.trim(), notes.trim(), areaId, subArea.trim(), projectId, start, due, priority, status, doneOn, repeat, createdAt)
+    /** An alert set for a time already gone will not ring; say so rather than refuse to save. */
+    fun alertPassed(now: LocalDateTime = LocalDateTime.now()): Boolean = alertAt != null && status.isOpen && !alertAt.isAfter(now)
+
+    fun toTask() = Task(
+        id, title.trim(), notes.trim(), areaId, subArea.trim(), projectId, start, due, priority, status, doneOn, repeat, createdAt,
+        alertAt, alertStyle,
+    )
 }
 
 class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectId: Long?) : ViewModel() {
@@ -135,7 +147,7 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
                 app.tasks.task(taskId).first()?.let { t ->
                     _state.value = TaskEditorState(
                         t.id, t.title, t.notes, t.areaId, t.subArea, t.projectId, t.start, t.due,
-                        t.priority, t.status, t.doneOn, t.repeat, t.createdAt,
+                        t.priority, t.status, t.doneOn, t.repeat, t.createdAt, t.alertAt, t.alertStyle,
                     )
                 }
             } else if (projectId != null) {
@@ -153,6 +165,15 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
     fun onPriority(v: Priority) = _state.update { it.copy(priority = v) }
     fun onRepeat(v: Repeat) = _state.update { it.copy(repeat = v) }
     fun onDoneOn(v: LocalDate?) = _state.update { it.copy(doneOn = v) }
+
+    fun onAlertEnabled(on: Boolean) = _state.update { s ->
+        s.copy(alertAt = if (on) s.alertAt ?: defaultAlert(s.due) else null)
+    }
+
+    fun onAlertDate(d: LocalDate) = _state.update { s -> s.copy(alertAt = d.atTime(s.alertAt?.toLocalTime() ?: DEFAULT_ALERT_TIME)) }
+    fun onAlertTime(t: LocalTime) = _state.update { s -> s.copy(alertAt = (s.alertAt?.toLocalDate() ?: LocalDate.now()).atTime(t)) }
+    fun onAlertAt(at: LocalDateTime) = _state.update { it.copy(alertAt = at) }
+    fun onAlertStyle(v: AlertStyle) = _state.update { it.copy(alertStyle = v) }
 
     fun onStatus(v: TaskStatus) = _state.update {
         it.copy(status = v, doneOn = if (v == TaskStatus.Done) it.doneOn ?: LocalDate.now() else null)
@@ -186,6 +207,16 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
         viewModelScope.launch {
             app.tasks.delete(id)
             then()
+        }
+    }
+
+    companion object {
+        val DEFAULT_ALERT_TIME: LocalTime = LocalTime.of(9, 0)
+
+        /** 9 AM on the deadline (or today); if that has passed, the next whole hour. */
+        fun defaultAlert(due: LocalDate?, now: LocalDateTime = LocalDateTime.now()): LocalDateTime {
+            val onDay = (due ?: now.toLocalDate()).atTime(DEFAULT_ALERT_TIME)
+            return if (onDay.isAfter(now)) onDay else now.truncatedTo(ChronoUnit.HOURS).plusHours(1)
         }
     }
 }

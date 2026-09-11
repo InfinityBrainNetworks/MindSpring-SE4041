@@ -109,7 +109,7 @@ object TaskLogic {
     /**
      * The next occurrence of a repeating task, or null. Dates move forward by the repeat period
      * until the task lands today or later, so finishing a weekly class late skips the missed slot
-     * instead of creating one already overdue.
+     * instead of creating one already overdue. An alert moves with the dates, keeping its time of day.
      */
     fun nextOccurrence(task: Task, today: LocalDate): Task? {
         if (task.repeat == Repeat.None) return null
@@ -121,12 +121,14 @@ object TaskLogic {
         }
         var start = task.start
         var due = task.due
+        var alert = task.alertAt
         if (start == null && due == null) due = today
         do {
             start = start?.let(::step)
             due = due?.let(::step)
+            alert = alert?.let { step(it.toLocalDate()).atTime(it.toLocalTime()) }
         } while ((due ?: start)!!.isBefore(today))
-        return task.copy(id = 0, start = start, due = due, status = TaskStatus.NotStarted, doneOn = null, createdAt = today)
+        return task.copy(id = 0, start = start, due = due, status = TaskStatus.NotStarted, doneOn = null, createdAt = today, alertAt = alert)
     }
 
     fun rollup(tasks: List<Task>, today: LocalDate): TaskRollup {

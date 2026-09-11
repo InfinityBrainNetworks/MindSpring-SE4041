@@ -96,6 +96,7 @@ class RepositoryTest {
         app.auth.loginDemo()
         val before = Triple(app.habits.habits.first().size, app.tasks.tasks.first().size, app.journal.entries.first().size)
         val marks = app.habits.marks.first().size
+        val alerts = app.tasks.tasks.first().mapNotNull { t -> t.alertAt?.let { t.title to (it to t.alertStyle) } }.toSet()
         val json = app.backup.export()
 
         app.auth.register("Fresh", "fresh@x.co", "secret1")
@@ -109,6 +110,9 @@ class RepositoryTest {
         assertEquals(4, projects.size)
         // Tasks still point at their (renumbered) projects.
         assertTrue(app.tasks.tasks.first().filter { it.projectId != null }.all { t -> projects.any { it.id == t.projectId } })
+        // Alerts come back with their times and styles.
+        assertEquals(2, alerts.size)
+        assertEquals(alerts, app.tasks.tasks.first().mapNotNull { t -> t.alertAt?.let { t.title to (it to t.alertStyle) } }.toSet())
     }
 
     @Test fun journalEntryIsOnePerDay() = runBlocking {

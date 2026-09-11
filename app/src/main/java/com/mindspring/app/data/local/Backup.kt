@@ -1,6 +1,7 @@
 package com.mindspring.app.data.local
 
 import androidx.room.withTransaction
+import com.mindspring.app.data.model.AlertStyle
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalDate
@@ -36,7 +37,7 @@ class Backup(private val db: MindSpringDatabase, private val session: Session) {
             JSONObject().put("id", h.id).put("name", h.name).putOpt("areaId", h.areaId).put("subArea", h.subArea)
                 .put("icon", h.icon).put("frequency", h.frequency).put("daysMask", h.daysMask).put("target", h.target)
                 .put("reminderEnabled", h.reminderEnabled).put("reminderMinute", h.reminderMinute)
-                .put("active", h.active).put("createdAt", h.createdAt.toString())
+                .put("active", h.active).put("createdAt", h.createdAt.toString()).put("reminderStyle", h.reminderStyle)
         }))
         root.put("marks", JSONArray(db.habits().allMarks(userId).map { m ->
             JSONObject().put("habitId", m.habitId).put("date", m.date.toString()).put("state", m.state)
@@ -47,6 +48,7 @@ class Backup(private val db: MindSpringDatabase, private val session: Session) {
                 .putOpt("start", t.startDate?.toString()).putOpt("due", t.dueDate?.toString())
                 .put("priority", t.priority).put("status", t.status).putOpt("doneOn", t.doneOn?.toString())
                 .put("repeat", t.repeat).put("createdAt", t.createdAt.toString())
+                .putOpt("alertAt", t.alertAt?.toString()).put("alertStyle", t.alertStyle)
         }))
         root.put("moods", JSONArray(db.moods().all(userId).map { m ->
             JSONObject().put("rating", m.rating).put("feelings", m.feelings).put("note", m.note).put("loggedAt", m.loggedAt.toString())
@@ -100,7 +102,7 @@ class Backup(private val db: MindSpringDatabase, private val session: Session) {
                         0, userId, o.getString("name"), area(o), o.optString("subArea"), o.optString("icon"),
                         o.optString("frequency"), o.optInt("daysMask", 127), o.optString("target"),
                         o.optBoolean("reminderEnabled"), o.optInt("reminderMinute", 480), o.optBoolean("active", true),
-                        LocalDate.parse(o.getString("createdAt")),
+                        LocalDate.parse(o.getString("createdAt")), o.optString("reminderStyle", AlertStyle.Reminder.name),
                     ),
                 )
             }
@@ -116,6 +118,9 @@ class Backup(private val db: MindSpringDatabase, private val session: Session) {
                         o.optLongOrNull("projectId")?.let(projectIds::get),
                         o.optDate("start"), o.optDate("due"), o.optString("priority"), o.optString("status"),
                         o.optDate("doneOn"), o.optString("repeat"), LocalDate.parse(o.getString("createdAt")),
+                        // Older backups have no alert fields; they restore without alerts.
+                        if (o.isNull("alertAt")) null else LocalDateTime.parse(o.getString("alertAt")),
+                        o.optString("alertStyle", AlertStyle.Reminder.name),
                     ),
                 )
             }

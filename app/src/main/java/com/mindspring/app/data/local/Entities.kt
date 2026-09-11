@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.GratitudeEntry
 import com.mindspring.app.data.model.Habit
 import com.mindspring.app.data.model.HabitFrequency
@@ -112,6 +113,8 @@ data class HabitEntity(
     val reminderMinute: Int,
     val active: Boolean,
     val createdAt: LocalDate,
+    /** Added in version 3. */
+    @ColumnInfo(defaultValue = "Reminder") val reminderStyle: String = AlertStyle.Reminder.name,
 ) {
     fun toModel() = Habit(
         id = id,
@@ -126,6 +129,7 @@ data class HabitEntity(
         reminderTime = LocalTime.of(reminderMinute / 60, reminderMinute % 60),
         active = active,
         createdAt = createdAt,
+        reminderStyle = enumOr(reminderStyle, AlertStyle.Reminder),
     )
 
     companion object {
@@ -143,6 +147,7 @@ data class HabitEntity(
             reminderMinute = h.reminderTime.hour * 60 + h.reminderTime.minute,
             active = h.active,
             createdAt = h.createdAt,
+            reminderStyle = h.reminderStyle.name,
         )
     }
 }
@@ -185,6 +190,9 @@ data class TaskEntity(
     val doneOn: LocalDate?,
     @ColumnInfo(name = "repeatRule") val repeat: String,
     val createdAt: LocalDate,
+    /** Added in version 2. */
+    val alertAt: LocalDateTime? = null,
+    @ColumnInfo(defaultValue = "Reminder") val alertStyle: String = AlertStyle.Reminder.name,
 ) {
     fun toModel() = Task(
         id = id,
@@ -200,6 +208,8 @@ data class TaskEntity(
         doneOn = doneOn,
         repeat = enumOr(repeat, Repeat.None),
         createdAt = createdAt,
+        alertAt = alertAt,
+        alertStyle = enumOr(alertStyle, AlertStyle.Reminder),
     )
 
     companion object {
@@ -218,6 +228,8 @@ data class TaskEntity(
             doneOn = t.doneOn,
             repeat = t.repeat.name,
             createdAt = t.createdAt,
+            alertAt = t.alertAt,
+            alertStyle = t.alertStyle.name,
         )
     }
 }

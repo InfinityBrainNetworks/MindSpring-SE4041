@@ -1,6 +1,7 @@
 package com.mindspring.app.data.local
 
 import android.content.Context
+import android.provider.Settings
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -9,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.mindspring.app.data.model.AlertSounds
 import com.mindspring.app.data.model.ThemeMode
 import com.mindspring.app.data.repository.ReminderSettings
 import com.mindspring.app.data.repository.SettingsRepository
@@ -32,6 +34,10 @@ class DataStoreSettings(context: Context) : SettingsRepository {
         val digestOn = booleanPreferencesKey("digest_enabled")
         val digestAt = intPreferencesKey("digest_minute")
         val session = longPreferencesKey("session_user_id")
+        val reminderTone = stringPreferencesKey("reminder_tone")
+        val alarmTone = stringPreferencesKey("alarm_tone")
+        val vibrate = booleanPreferencesKey("alert_vibrate")
+        val snooze = intPreferencesKey("snooze_minutes")
     }
 
     private fun <T> read(block: (Preferences) -> T): Flow<T> = store.data.map(block).distinctUntilChanged()
@@ -42,6 +48,25 @@ class DataStoreSettings(context: Context) : SettingsRepository {
     override val checkInReminder = read { ReminderSettings(it[Keys.checkInOn] ?: true, minuteToTime(it[Keys.checkInAt] ?: (20 * 60))) }
     override val taskDigest = read { ReminderSettings(it[Keys.digestOn] ?: true, minuteToTime(it[Keys.digestAt] ?: (8 * 60))) }
     override val sessionUserId: Flow<Long?> = read { it[Keys.session] }
+
+    // A tone that was never picked is the phone's default; an empty string records "Silent".
+    override val alertSounds = read {
+        AlertSounds(
+            reminderTone = (it[Keys.reminderTone] ?: Settings.System.DEFAULT_NOTIFICATION_URI.toString()).ifEmpty { null },
+            alarmTone = (it[Keys.alarmTone] ?: Settings.System.DEFAULT_ALARM_ALERT_URI.toString()).ifEmpty { null },
+            vibrate = it[Keys.vibrate] ?: true,
+            snoozeMinutes = it[Keys.snooze] ?: 10,
+        )
+    }
+
+    override suspend fun setAlertSounds(sounds: AlertSounds) {
+        store.edit {
+            it[Keys.reminderTone] = sounds.reminderTone.orEmpty()
+            it[Keys.alarmTone] = sounds.alarmTone.orEmpty()
+            it[Keys.vibrate] = sounds.vibrate
+            it[Keys.snooze] = sounds.snoozeMinutes
+        }
+    }
 
     override suspend fun setThemeMode(mode: ThemeMode) { store.edit { it[Keys.theme] = mode.name } }
     override suspend fun setAmbientMotion(enabled: Boolean) { store.edit { it[Keys.ambient] = enabled } }

@@ -4,6 +4,7 @@ import com.mindspring.app.data.model.Priority
 import com.mindspring.app.data.model.Repeat
 import com.mindspring.app.data.model.Task
 import com.mindspring.app.data.model.TaskStatus
+import com.mindspring.app.ui.screens.tasks.TaskEditorViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -65,6 +66,22 @@ class TaskLogicTest {
         assertEquals(TaskStatus.NotStarted, next.status)
         assertNull(next.doneOn)
         assertEquals(0L, next.id)
+    }
+
+    @Test fun repeatCarriesTheAlertForwardAtTheSameTime() {
+        val t = task(due = today, repeat = Repeat.Weekly).copy(alertAt = today.minusDays(1).atTime(18, 30))
+        val next = TaskLogic.nextOccurrence(t, today)!!
+        assertEquals(today.plusWeeks(1), next.due)
+        assertEquals(today.minusDays(1).plusWeeks(1).atTime(18, 30), next.alertAt)
+        assertNull(TaskLogic.nextOccurrence(task(due = today, repeat = Repeat.Daily), today)!!.alertAt)
+    }
+
+    @Test fun defaultAlertIsNineOnTheDeadlineOrTheNextHour() {
+        val morning = today.atTime(7, 40)
+        assertEquals(today.plusDays(3).atTime(9, 0), TaskEditorViewModel.defaultAlert(today.plusDays(3), morning))
+        assertEquals(today.atTime(9, 0), TaskEditorViewModel.defaultAlert(null, morning))
+        // 9 AM has gone: the next whole hour instead.
+        assertEquals(today.atTime(15, 0), TaskEditorViewModel.defaultAlert(today, today.atTime(14, 5)))
     }
 
     @Test fun lateRepeatSkipsSlotsAlreadyPast() {

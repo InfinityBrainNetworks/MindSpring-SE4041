@@ -9,6 +9,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalTime
 
 class HabitStatsTest {
     // Friday 11 September 2026.
@@ -86,6 +87,24 @@ class HabitStatsTest {
         // Only the daily habit is due on a Saturday, and it was done.
         assertEquals(1f, HabitStats.dayScore(listOf(daily, weekday, weekly), byHabit, saturday)!!, 0.001f)
         assertNull(HabitStats.dayScore(listOf(weekday), emptyMap(), saturday))
+    }
+
+    @Test fun reminderGoesToTheNextDueDayThatIsStillOpen() {
+        val weekday = habit(HabitFrequency.Weekdays).copy(reminderEnabled = true, reminderTime = LocalTime.of(18, 0))
+        // Friday before six: tonight.
+        assertEquals(today.atTime(18, 0), HabitStats.nextReminder(weekday, emptyMap(), today.atTime(9, 0)))
+        // Friday after six, or already ticked: skips the weekend to Monday.
+        assertEquals(today.plusDays(3).atTime(18, 0), HabitStats.nextReminder(weekday, emptyMap(), today.atTime(19, 0)))
+        assertEquals(today.plusDays(3).atTime(18, 0), HabitStats.nextReminder(weekday, done(11), today.atTime(9, 0)))
+        assertNull(HabitStats.nextReminder(weekday.copy(reminderEnabled = false), emptyMap(), today.atTime(9, 0)))
+        assertNull(HabitStats.nextReminder(weekday.copy(active = false), emptyMap(), today.atTime(9, 0)))
+    }
+
+    @Test fun weeklyReminderRestsOnceTheWeekIsDone() {
+        val weekly = habit(HabitFrequency.Weekly).copy(reminderEnabled = true, reminderTime = LocalTime.of(8, 0))
+        // Done on Tuesday this week: nothing more until Monday.
+        val next = HabitStats.nextReminder(weekly, done(8), today.atTime(7, 0))
+        assertEquals(LocalDate.of(2026, 9, 14).atTime(8, 0), next)
     }
 
     @Test fun nothingCountsBeforeCreation() {

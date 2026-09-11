@@ -1,5 +1,6 @@
 package com.mindspring.app.data.local
 
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
 import com.mindspring.app.data.model.MarkState
@@ -100,17 +101,23 @@ object DemoData {
         fun task(
             title: String, area: Int, sub: String, project: Long?, start: Long?, due: Long?, pri: Priority,
             status: TaskStatus = TaskStatus.NotStarted, doneOn: Long? = null, repeat: Repeat = Repeat.None, notes: String = "",
+            alert: LocalTime? = null, alertStyle: AlertStyle = AlertStyle.Reminder,
         ) = TaskEntity(
             userId = userId, title = title, notes = notes, areaId = areaIds[area], subArea = sub, projectId = project,
             startDate = start?.let(::d), dueDate = due?.let(::d), priority = pri.name, status = status.name,
             doneOn = doneOn?.let(::d), repeat = repeat.name, createdAt = d(-(HISTORY_DAYS - 5)),
+            // Alerts sit on the due day, so they are always still to come.
+            alertAt = alert?.let { due?.let(::d)?.atTime(it) }, alertStyle = alertStyle.name,
         )
         listOf(
             task("Finalise the UI screens", 3, "Assignments", app, -12, -5, Priority.A, TaskStatus.Done, doneOn = -5),
-            task("Room database and repositories", 3, "Assignments", app, -4, 1, Priority.A, TaskStatus.InProgress),
+            task("Room database and repositories", 3, "Assignments", app, -4, 1, Priority.A, TaskStatus.InProgress, alert = LocalTime.of(9, 0)),
             task("Write unit and UI tests", 3, "Assignments", app, 0, 4, Priority.A),
             task("Record the demo video", 3, "Assignments", app, 5, 6, Priority.B),
-            task("Submit the final APK", 3, "Assignments", app, 7, 7, Priority.A, notes = "Upload to the course page before midnight."),
+            task(
+                "Submit the final APK", 3, "Assignments", app, 7, 7, Priority.A, notes = "Upload to the course page before midnight.",
+                alert = LocalTime.of(19, 30), alertStyle = AlertStyle.Alarm,
+            ),
             task("Draft the research proposal", 3, "Research", proposal, -15, -6, Priority.A, TaskStatus.Done, doneOn = -4),
             task("Literature review notes", 3, "Research", proposal, -8, -1, Priority.A, TaskStatus.InProgress),
             task("Rework methodology after feedback", 3, "Research", proposal, 2, 10, Priority.B),

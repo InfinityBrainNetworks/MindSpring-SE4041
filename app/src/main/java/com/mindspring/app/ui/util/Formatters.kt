@@ -65,6 +65,9 @@ object Fmt {
         else -> shortDay(d)
     }
 
+    /** "Today, 9:00 AM", "Tomorrow, 9:00 AM" or "Fri 18 Sep, 9:00 AM". */
+    fun alert(dt: LocalDateTime, today: LocalDate = LocalDate.now()): String = "${friendlyDay(dt.toLocalDate(), today)}, ${time(dt.toLocalTime())}"
+
     /** "due in 3 days", "due today", "2 days late". */
     fun dueIn(due: LocalDate, today: LocalDate = LocalDate.now()): String {
         val days = ChronoUnit.DAYS.between(today, due)

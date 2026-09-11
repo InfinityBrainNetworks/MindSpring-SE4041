@@ -59,6 +59,8 @@ data class Habit(
     /** Retired habits keep their history but stop appearing and stop counting. */
     val active: Boolean = true,
     val createdAt: LocalDate,
+    /** How the reminder asks for attention, as for task alerts. */
+    val reminderStyle: AlertStyle = AlertStyle.Reminder,
 ) {
     /** The weekdays a day-based habit is due on. Weekly and Monthly habits can be done any day. */
     val days: Set<DayOfWeek>
@@ -97,6 +99,16 @@ enum class TaskStatus(val label: String) {
 /** A repeating task spawns its next occurrence when it is completed. */
 enum class Repeat(val label: String) { None("Does not repeat"), Daily("Every day"), Weekly("Every week"), Monthly("Every month") }
 
+/**
+ * How a task alert or habit reminder asks for attention. Both drop down from the top of the screen
+ * while the phone is in use and fill the lock screen when it is not; a reminder sounds once, an
+ * alarm keeps ringing.
+ */
+enum class AlertStyle(val label: String, val description: String) {
+    Reminder("Reminder", "Sounds your reminder tone once. Pops down from the top, or fills the lock screen."),
+    Alarm("Alarm", "Keeps ringing with your alarm tone until you snooze, finish or dismiss it."),
+}
+
 data class Task(
     val id: Long = 0,
     val title: String,
@@ -114,9 +126,16 @@ data class Task(
     val doneOn: LocalDate? = null,
     val repeat: Repeat = Repeat.None,
     val createdAt: LocalDate,
+    /** When to alert, on the phone's clock. Null means no alert. */
+    val alertAt: LocalDateTime? = null,
+    val alertStyle: AlertStyle = AlertStyle.Reminder,
 ) {
     /** The spreadsheet's task ID, derived from the row's database id so it travels with the task. */
     val code: String get() = "T%03d".format(id)
+
+    /** An alert that is still to come on a task that is still open. */
+    fun upcomingAlert(now: LocalDateTime = LocalDateTime.now()): LocalDateTime? =
+        alertAt?.takeIf { status.isOpen && it.isAfter(now) }
 }
 
 /** One deliverable that several tasks add up to, e.g. "Research Proposal". */
@@ -185,3 +204,19 @@ enum class Period(val label: String, val days: Long) {
 }
 
 enum class ThemeMode(val label: String) { System("System"), Light("Light"), Dark("Dark") }
+
+/**
+ * Sounds for notifications. Tones are content URIs from the phone's own sound picker; null means
+ * silent. The reminder tone is used for task reminders and the daily nudges, the alarm tone for
+ * task alarms.
+ */
+data class AlertSounds(
+    val reminderTone: String?,
+    val alarmTone: String?,
+    val vibrate: Boolean = true,
+    val snoozeMinutes: Int = 10,
+) {
+    companion object {
+        val SnoozeChoices = listOf(5, 10, 15, 30)
+    }
+}

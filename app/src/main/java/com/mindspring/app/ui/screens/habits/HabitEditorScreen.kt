@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
@@ -44,9 +45,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
 import com.mindspring.app.ui.appViewModel
+import com.mindspring.app.ui.components.AlertStylePicker
 import com.mindspring.app.ui.components.AreaChooser
 import com.mindspring.app.ui.components.DayToggle
 import com.mindspring.app.ui.components.FieldLabel
@@ -58,6 +61,7 @@ import com.mindspring.app.ui.components.SuggestionField
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.TimePickerDialog
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.components.rememberAskForNotifications
 import com.mindspring.app.ui.components.tint
 import com.mindspring.app.ui.components.vector
 import com.mindspring.app.ui.theme.Dimens
@@ -74,6 +78,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
     val subAreas by vm.subAreas.collectAsStateWithLifecycle()
     val c = MsTheme.colors
     var pickTime by rememberSaveable { mutableStateOf(false) }
+    val askForNotifications = rememberAskForNotifications()
 
     LaunchedEffect(s.saved) { if (s.saved) onDone() }
 
@@ -148,6 +153,52 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
             }
 
             Column {
+                FieldLabel("Reminder")
+                MsCard(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            Modifier.weight(1f).clip(MaterialTheme.shapes.small).clickable(enabled = s.reminderEnabled) { pickTime = true }.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                if (s.reminderEnabled && s.reminderStyle == AlertStyle.Alarm) Icons.Outlined.Alarm else Icons.Outlined.Notifications,
+                                contentDescription = null,
+                                tint = if (s.reminderEnabled) c.tealInk else c.textTertiary,
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(Fmt.time(s.reminderTime), style = MaterialTheme.typography.bodyLarge, color = if (s.reminderEnabled) c.textPrimary else c.textTertiary)
+                                Text(
+                                    if (s.reminderEnabled) "Tap to change the time" else "Reminder off",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = c.textTertiary,
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = s.reminderEnabled,
+                            onCheckedChange = { on ->
+                                if (on) askForNotifications()
+                                vm.onReminderEnabled(on)
+                            },
+                            colors = msSwitchColors(),
+                        )
+                    }
+                    AnimatedVisibility(s.reminderEnabled) {
+                        AlertStylePicker(s.reminderStyle, vm::onReminderStyle, Modifier.padding(top = 14.dp))
+                    }
+                }
+                if (s.reminderEnabled) {
+                    Text(
+                        "Goes off on the days this habit is due, and stays quiet once it's ticked or skipped for the day.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = c.textTertiary,
+                        modifier = Modifier.padding(start = 4.dp, top = 8.dp),
+                    )
+                }
+            }
+
+            Column {
                 FieldLabel("Life area")
                 AreaChooser(areas, s.areaId, vm::onArea)
             }
@@ -174,30 +225,6 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                             }
                             repeat(6 - row.size) { Spacer(Modifier.size(44.dp)) }
                         }
-                    }
-                }
-            }
-
-            Column {
-                FieldLabel("Reminder")
-                MsCard(Modifier.fillMaxWidth()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Row(
-                            Modifier.weight(1f).clip(MaterialTheme.shapes.small).clickable(enabled = s.reminderEnabled) { pickTime = true }.padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(Icons.Outlined.Notifications, contentDescription = null, tint = c.tealInk)
-                            Spacer(Modifier.width(12.dp))
-                            Column {
-                                Text(Fmt.time(s.reminderTime), style = MaterialTheme.typography.bodyLarge, color = if (s.reminderEnabled) c.textPrimary else c.textTertiary)
-                                Text(
-                                    if (s.reminderEnabled) "Tap to change the time" else "Reminder off",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = c.textTertiary,
-                                )
-                            }
-                        }
-                        Switch(checked = s.reminderEnabled, onCheckedChange = vm::onReminderEnabled, colors = msSwitchColors())
                     }
                 }
             }

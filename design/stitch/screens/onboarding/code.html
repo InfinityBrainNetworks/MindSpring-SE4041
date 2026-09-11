@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MindSpring - Onboarding</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-surface": "#141d1b",
+                      "surface": "#f2fcf8",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#e9f3ef",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#dbe5e1",
+                      "on-tertiary-fixed-variant": "#444844",
+                      "surface-dim": "#d2dcd9",
+                      "secondary-container": "#feb64e",
+                      "inverse-surface": "#293230",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#e0eae7",
+                      "tertiary-container": "#464946",
+                      "on-surface-variant": "#404947",
+                      "error": "#ba1a1a",
+                      "tertiary": "#2f3330",
+                      "on-background": "#141d1b",
+                      "outline-variant": "#bfc8c6",
+                      "on-tertiary-container": "#b5b8b3",
+                      "on-tertiary-fixed": "#191c1a",
+                      "outline": "#707977",
+                      "primary-fixed": "#b2eee7",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#97d1ca",
+                      "secondary-fixed-dim": "#ffb956",
+                      "on-secondary-container": "#714800",
+                      "on-primary-fixed-variant": "#0d4f4a",
+                      "surface-container": "#e6f0ec",
+                      "on-primary-fixed": "#00201d",
+                      "error-container": "#ffdad6",
+                      "surface-bright": "#f2fcf8",
+                      "secondary-fixed": "#ffddb5",
+                      "primary": "#003935",
+                      "tertiary-fixed-dim": "#c5c7c3",
+                      "tertiary-fixed": "#e1e3de",
+                      "primary-fixed-dim": "#97d1ca",
+                      "surface-variant": "#dbe5e1",
+                      "primary-container": "#10514c",
+                      "on-secondary-fixed": "#2a1800",
+                      "background": "#f2fcf8",
+                      "on-secondary-fixed-variant": "#643f00",
+                      "surface-tint": "#2d6862",
+                      "surface-container-low": "#ecf6f2",
+                      "on-primary-container": "#88c2bb",
+                      "secondary": "#835400"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack_md": "16px",
+                      "stack_lg": "32px",
+                      "gutter": "16px",
+                      "base": "8px",
+                      "stack_sm": "8px",
+                      "card_padding": "20px",
+                      "screen_padding": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "15px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Smooth scrolling for the carousel */
+        .snap-x {
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .snap-center {
+            scroll-snap-align: center;
+        }
+        
+        /* Hide scrollbar for carousel */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col justify-between overflow-hidden relative">
+<!-- Top actions (Skip) -->
+<div class="w-full p-screen_padding flex justify-end absolute top-0 left-0 z-10">
+<button class="text-primary-container font-label-sm text-label-sm font-bold tracking-wide py-2 px-4 rounded-full hover:bg-primary-container/10 transition-colors">
+            Skip
+        </button>
+</div>
+<!-- Carousel Container -->
+<div class="flex-grow flex flex-col justify-center items-center w-full h-full relative">
+<div class="flex w-full h-[618px] overflow-x-auto snap-x no-scrollbar" id="carousel">
+<!-- Slide 1 -->
+<div class="min-w-full flex flex-col items-center justify-center px-screen_padding snap-center">
+<div class="w-64 h-64 mb-stack_lg bg-surface-container-lowest rounded-full shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex items-center justify-center overflow-hidden border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A delicate, minimalist line-art style illustration of a small seed sprouting into a gentle botanical plant. The lines are soft deep teal against a pristine white background. The overall feeling is one of grounded vitality, growth, and calm serenity in a soft light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOgnAFguUP1pta0VIx0vOvUSqhoVpLSRQo-Fwat7lfpTLm3tsifuln8KrzsoKb7uSBmXT5_JWTSKnj3KLeaYM0wTO3jJbjY1ez6K4aL13WmgGEfZjub-CQaIyKGkF3NU9oUPzsd6EzJnN7QK7QehPRi7TLvZFCisGTws8CQ5gOvFXv7S9Mp6tZODb_BjEdkcB5c150usv0tySyToVnEEH9OjSS6E3WeZvwexUx0zBb78MIEeV__laT"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-center text-primary-container mb-stack_sm">Your Private Sanctuary</h1>
+<p class="font-body-md text-body-md text-center text-on-surface-variant max-w-sm">A safe space for your mind, entirely offline. Your thoughts remain with you.</p>
+</div>
+<!-- Slide 2 -->
+<div class="min-w-full flex flex-col items-center justify-center px-screen_padding snap-center">
+<div class="w-64 h-64 mb-stack_lg bg-surface-container-lowest rounded-full shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex items-center justify-center overflow-hidden border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A refined, modern corporate illustration depicting a gentle, continuous loop or cycle, symbolizing healthy habit formation. The aesthetic uses soft teal and warm amber tones on a clean white background, evoking a sense of steady progress and non-judgmental support in a light-mode interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDubTJEATVyZOhzOXOzCnONDjM-cY1pvCYaJ9kJEB6IFffL_qrEY_sJD_hmgsPaO1Jo7OwLK4a3qGsiVrBlwjrq0txkBbTBumvI8tfA4HnBFgx_4PmY4287qmTf4uHYKAy2o42kowouwkVAdK8DQYB1c6wfjKcrMkkc1-6eksaPB9IGdMTRpB4MaCbwiRfHoZgIeTfQIOWLAMnWjyEuZr-VtyGJA1ekSz4yHRSKqu2kGdMkpLavasUf"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-center text-primary-container mb-stack_sm">Build Better Habits</h1>
+<p class="font-body-md text-body-md text-center text-on-surface-variant max-w-sm">Establish routines that nourish your well-being through gentle, daily guidance.</p>
+</div>
+<!-- Slide 3 -->
+<div class="min-w-full flex flex-col items-center justify-center px-screen_padding snap-center">
+<div class="w-64 h-64 mb-stack_lg bg-surface-container-lowest rounded-full shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex items-center justify-center overflow-hidden border border-surface-variant">
+<img class="w-full h-full object-cover" data-alt="A calming, abstract representation of a warm sunset or sunrise using soft gradient shapes in pale amber, gentle yellow, and soft sage green. The style is modern, tactile, and soothing, resembling smooth stones or soft paper cutouts to promote relaxation and mindfulness." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIDuAOUhgi73hBHDBm1QzVmRb4-LtSnT3hma_3eDosSqw3Vke_vYa6YGxiftoDI5x1ZPFzDkZRLHjqFmDlF0mF_4hdoOinR1M7c2smkPcbYpx4mg0kWXAQz4hGGx4PBsKK7oM87aRTCGn7rCvKWNuJoVMounGNMIXt3c66YLNX03Rbc_p8Slotb_R9aUHo3pPnVjIvzqeNdtqRuj6PfKHaBp8uQ_D2Jn_9a_2gLul2EnR1GFaUI7QD"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-center text-primary-container mb-stack_sm">Find Your Center</h1>
+<p class="font-body-md text-body-md text-center text-on-surface-variant max-w-sm">Take a moment each day to reflect, breathe, and reconnect with yourself.</p>
+</div>
+</div>
+</div>
+<!-- Bottom Actions & Indicators -->
+<div class="w-full px-screen_padding pb-[48px] pt-stack_md flex flex-col items-center bg-gradient-to-t from-background via-background to-transparent relative z-10">
+<!-- Indicators -->
+<div class="flex gap-2 mb-stack_lg" id="indicators">
+<div class="w-2 h-2 rounded-full bg-secondary-container transition-all duration-300 ease-in-out indicator-dot" data-index="0"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant transition-all duration-300 ease-in-out indicator-dot" data-index="1"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant transition-all duration-300 ease-in-out indicator-dot" data-index="2"></div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full max-w-sm bg-secondary-container text-on-secondary-container font-title-md text-title-md py-4 px-8 rounded-full shadow-[0px_8px_30px_rgba(27,36,34,0.12)] hover:scale-[0.98] active:scale-[0.95] transition-transform duration-200 ease-out flex items-center justify-center gap-2">
+            Get Started
+            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+<script>
+        // Simple vanilla JS to handle scroll snapping and indicator updates
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('carousel');
+            const indicators = document.querySelectorAll('.indicator-dot');
+            
+            if(!carousel || indicators.length === 0) return;
+
+            const updateIndicators = () => {
+                const scrollLeft = carousel.scrollLeft;
+                const slideWidth = carousel.clientWidth;
+                // Calculate current slide index based on scroll position
+                const currentIndex = Math.round(scrollLeft / slideWidth);
+                
+                indicators.forEach((dot, index) => {
+                    if(index === currentIndex) {
+                        dot.classList.remove('bg-outline-variant');
+                        dot.classList.add('bg-secondary-container');
+                        dot.classList.add('w-6'); // Make active dot wider
+                    } else {
+                        dot.classList.remove('bg-secondary-container', 'w-6');
+                        dot.classList.add('bg-outline-variant');
+                    }
+                });
+            };
+
+            // Listen for scroll events on the carousel
+            carousel.addEventListener('scroll', () => {
+                // Throttle the update slightly for performance
+                requestAnimationFrame(updateIndicators);
+            });
+            
+            // Allow clicking indicators to scroll
+            indicators.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    const slideWidth = carousel.clientWidth;
+                    carousel.scrollTo({
+                        left: slideWidth * index,
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body></html>

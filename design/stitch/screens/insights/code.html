@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Insights - MindSpring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+                        "display-lg": ["Plus Jakarta Sans", "sans-serif"],
+                        "title-md": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "display-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .shadow-soft { box-shadow: 0px 4px 20px rgba(27, 36, 34, 0.06); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0; }
+        .material-symbols-outlined[data-weight="fill"] { font-variation-settings: 'FILL' 1; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen text-on-background pb-[80px]">
+<!-- Top App Bar -->
+<header class="bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container w-full sticky top-0 z-40 transition-shadow">
+<div class="flex justify-between items-center w-full px-screen_padding py-base">
+<button class="p-2 -ml-2 rounded-full hover:bg-primary/10 transition-colors scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg text-display-lg font-bold text-on-primary-container dark:text-on-primary-container">MindSpring</h1>
+<button class="p-2 -mr-2 rounded-full hover:bg-primary/10 transition-colors scale-95 active:scale-90 transition-transform">
+<img alt="User profile avatar" class="w-8 h-8 rounded-full bg-surface-container-highest object-cover" data-alt="A small circular avatar placeholder image for a user profile picture, featuring a generic minimalist silhouette against a soft background in a high-key lighting setup." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU2y1g9sSX_PRxVuPlmmSGHkXXcGAVR1Eswy0aVvcaNWsQM23yU-QbNDbLhE8cOwGNISo-2zYWnnOyTXycKcnmkcE9wrm8-YZcH_CI8SsiCPBhHGNVDdtCosCwjqeXP3ls2Nb5P6B8reIu4hZvk7Z9RwdC3qqVu_hM2pAy2ePBm7R4moNpr5jF_EYaLQZ62qhRN8NgPBxvVQs-ApP6dFXpPc5XhcqPr6WVUgNlQ0j5UWAqmJKpjn8z"/>
+</button>
+</div>
+</header>
+<main class="px-screen_padding pt-screen_padding pb-screen_padding space-y-stack_lg">
+<!-- Header -->
+<div class="space-y-stack_sm">
+<h2 class="font-title-md text-title-md">Your Insights</h2>
+</div>
+<!-- Segmented Control -->
+<div class="bg-surface-container rounded-full p-1 flex justify-between items-center shadow-soft">
+<button class="flex-1 py-2 text-center rounded-full font-label-sm text-label-sm text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">Week</button>
+<button class="flex-1 py-2 text-center rounded-full bg-surface-container-lowest shadow-sm font-label-sm text-label-sm font-semibold text-on-surface">Month</button>
+<button class="flex-1 py-2 text-center rounded-full font-label-sm text-label-sm text-on-surface-variant opacity-70 hover:opacity-100 transition-opacity">Year</button>
+</div>
+<!-- Highlighted Insight Card -->
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-soft border border-secondary-container relative overflow-hidden group hover:scale-[0.98] transition-transform cursor-pointer">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-4xl text-secondary-container" data-icon="lightbulb" data-weight="fill">lightbulb</span>
+</div>
+<div class="relative z-10 space-y-stack_sm">
+<div class="flex items-center gap-2 text-secondary-container font-label-sm text-label-sm font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]" data-icon="auto_awesome" data-weight="fill">auto_awesome</span>
+                    Key Insight
+                </div>
+<p class="font-body-md text-body-md text-on-surface">You rate your mood <span class="font-semibold text-secondary-container">32% higher</span> on days you exercise.</p>
+</div>
+</div>
+<!-- Mood Trend Chart Card -->
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-soft hover:scale-[0.98] transition-transform">
+<div class="flex justify-between items-center mb-stack_md">
+<h3 class="font-title-md text-title-md text-on-surface">Mood Trend</h3>
+</div>
+<div class="relative h-48 w-full">
+<!-- SVG Chart Mockup -->
+<svg class="w-full h-full preserve-aspect-ratio-none" viewbox="0 0 100 50">
+<!-- Dashed Average Line -->
+<line opacity="0.4" stroke="#707977" stroke-dasharray="2,2" stroke-width="0.5" x1="0" x2="100" y1="25" y2="25"></line>
+<!-- Trend Line -->
+<path d="M 0 40 Q 10 35, 20 20 T 40 15 T 60 30 T 80 10 T 100 5" fill="none" stroke="#10514c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+<!-- Data Points -->
+<circle cx="20" cy="20" fill="#feb64e" r="1.5"></circle>
+<circle cx="40" cy="15" fill="#feb64e" r="1.5"></circle>
+<circle cx="60" cy="30" fill="#feb64e" r="1.5"></circle>
+<circle cx="80" cy="10" fill="#feb64e" r="1.5"></circle>
+<circle cx="100" cy="5" fill="#feb64e" r="1.5"></circle>
+</svg>
+</div>
+</div>
+<!-- Habit Completion Rates -->
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-soft hover:scale-[0.98] transition-transform space-y-stack_md">
+<h3 class="font-title-md text-title-md text-on-surface">Habit Completion</h3>
+<div class="space-y-stack_sm">
+<!-- Habit 1 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Exercise</span>
+<span class="font-semibold text-primary-container">90%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[90%]"></div>
+</div>
+</div>
+<!-- Habit 2 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Study</span>
+<span class="font-semibold text-primary-container">75%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[75%]"></div>
+</div>
+</div>
+<!-- Habit 3 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-on-surface">Meditation</span>
+<span class="font-semibold text-primary-container">60%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[60%] opacity-80"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar Component Injection -->
+    {{DATA:COMPONENTS:COMPONENTS_3}}
+
+
+</body></html>

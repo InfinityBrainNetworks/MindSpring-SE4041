@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Habit</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "display-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background h-full font-body-md text-body-md antialiased overflow-x-hidden pb-32">
+<!-- Top App Bar -->
+<header class="bg-primary-container text-on-primary-container flex justify-between items-center w-full px-screen_padding py-base docked full-width top-0 sticky z-10 flat no shadows h-[72px]">
+<button class="scale-95 active:scale-90 transition-transform p-2 -ml-2 rounded-full hover:bg-primary/10 text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold text-on-primary-container flex-1 text-center truncate pr-[40px]">
+            Add Habit
+        </h1>
+</header>
+<main class="px-screen_padding py-stack_lg max-w-2xl mx-auto flex flex-col gap-stack_lg">
+<!-- Habit Name Field -->
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1" for="habit-name">Habit Name</label>
+<input class="w-full bg-transparent border border-outline-variant/40 focus:border-primary-container text-on-surface rounded-lg px-4 py-3 outline-none transition-colors placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary-container" id="habit-name" placeholder="e.g., Drink Water" type="text"/>
+</div>
+<!-- Categories (Horizontal Scroll) -->
+<div class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Category</label>
+<div class="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-screen_padding px-screen_padding snap-x">
+<button class="snap-start shrink-0 rounded-full bg-secondary-container text-on-secondary-container px-5 py-2 font-body-md text-body-md font-semibold transition-transform active:scale-95">Health</button>
+<button class="snap-start shrink-0 rounded-full border border-outline-variant/40 text-on-surface hover:bg-surface-container px-5 py-2 font-body-md text-body-md transition-all active:scale-95">Sleep</button>
+<button class="snap-start shrink-0 rounded-full border border-outline-variant/40 text-on-surface hover:bg-surface-container px-5 py-2 font-body-md text-body-md transition-all active:scale-95">Study</button>
+<button class="snap-start shrink-0 rounded-full border border-outline-variant/40 text-on-surface hover:bg-surface-container px-5 py-2 font-body-md text-body-md transition-all active:scale-95">Fitness</button>
+<button class="snap-start shrink-0 rounded-full border border-outline-variant/40 text-on-surface hover:bg-surface-container px-5 py-2 font-body-md text-body-md transition-all active:scale-95">Mindfulness</button>
+<button class="snap-start shrink-0 rounded-full border border-outline-variant/40 text-on-surface hover:bg-surface-container px-5 py-2 font-body-md text-body-md transition-all active:scale-95">Social</button>
+</div>
+</div>
+<!-- Icon Picker -->
+<div class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Icon</label>
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] grid grid-cols-5 gap-4 justify-items-center">
+<button class="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center transition-transform active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">directions_run</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">menu_book</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">self_improvement</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">bed</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">spa</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">local_florist</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">restaurant</span>
+</button>
+<button class="w-12 h-12 rounded-full hover:bg-surface-container text-primary-container flex items-center justify-center transition-colors active:scale-90">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Frequency -->
+<div class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Frequency</label>
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex justify-between">
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center justify-center">M</button>
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center justify-center">T</button>
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center justify-center">W</button>
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center justify-center">T</button>
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center justify-center">F</button>
+<button class="w-10 h-10 rounded-full border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container flex items-center justify-center">S</button>
+<button class="w-10 h-10 rounded-full border border-outline-variant/40 text-on-surface-variant hover:bg-surface-container flex items-center justify-center">S</button>
+</div>
+</div>
+<!-- Reminder -->
+<div class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Reminder</label>
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex items-center justify-between">
+<div class="flex items-center gap-3 text-on-surface">
+<span class="material-symbols-outlined text-primary-container">notifications</span>
+<span class="font-body-md text-body-md">08:00 AM</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+</label>
+</div>
+</div>
+<!-- Save Button -->
+<div class="mt-4 pt-4">
+<button class="w-full bg-secondary-container text-on-secondary-container rounded-full py-4 font-title-md text-title-md shadow-[0px_8px_30px_rgba(27,36,34,0.12)] transition-transform active:scale-95">
+                Save Habit
+            </button>
+</div>
+</main>
+</body></html>

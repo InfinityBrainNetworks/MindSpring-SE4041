@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MindSpring - Insights</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "display-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #101816; color: #e9f3ef; }
+        .dark-card { background-color: #182421; }
+        .chart-teal { color: #2E7D74; }
+        .chart-amber { color: #E8A33D; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased font-body-md text-body-md pb-[80px]">
+<!-- Top Navigation -->
+<header class="bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container flex justify-between items-center w-full px-screen_padding py-base docked full-width top-0 z-40 fixed flat no shadows">
+<button class="scale-95 active:scale-90 transition-transform hover:bg-primary/10 transition-colors p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg text-display-lg font-bold text-on-primary-container dark:text-on-primary-container">MindSpring</h1>
+<button class="scale-95 active:scale-90 transition-transform hover:bg-primary/10 transition-colors p-2 rounded-full flex items-center justify-center">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-dim flex items-center justify-center text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+</div>
+</button>
+</header>
+<main class="pt-[80px] px-screen_padding flex flex-col gap-stack_lg max-w-4xl mx-auto">
+<!-- Header -->
+<section>
+<h2 class="font-title-md text-title-md mb-stack_sm">Your Insights</h2>
+<p class="text-on-tertiary-container opacity-80">Here is a summary of your recent activity.</p>
+</section>
+<!-- Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-stack_md">
+<!-- Streak Card -->
+<div class="dark-card rounded-[20px] p-card_padding shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex flex-col justify-between hover:scale-[0.98] transition-transform">
+<div class="flex items-center justify-between mb-stack_md">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container">Current Streak</span>
+<span class="material-symbols-outlined chart-amber" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg chart-amber">12 Days</div>
+<p class="text-on-tertiary-container opacity-80 text-sm mt-1">Keep it up! You're on a roll.</p>
+</div>
+</div>
+<!-- Mood Card -->
+<div class="dark-card rounded-[20px] p-card_padding shadow-[0_4px_20px_rgba(0,0,0,0.2)] flex flex-col justify-between hover:scale-[0.98] transition-transform">
+<div class="flex items-center justify-between mb-stack_md">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container">Average Mood</span>
+<span class="material-symbols-outlined chart-teal" style="font-variation-settings: 'FILL' 1;">mood</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg chart-teal">Positive</div>
+<p class="text-on-tertiary-container opacity-80 text-sm mt-1">Based on last 7 days.</p>
+</div>
+</div>
+<!-- Weekly Activity Chart (Placeholder) -->
+<div class="dark-card rounded-[20px] p-card_padding shadow-[0_4px_20px_rgba(0,0,0,0.2)] md:col-span-2 flex flex-col hover:scale-[0.98] transition-transform">
+<div class="flex items-center justify-between mb-stack_md">
+<span class="font-title-md text-title-md">Weekly Activity</span>
+<span class="material-symbols-outlined text-on-tertiary-container">bar_chart</span>
+</div>
+<div class="h-48 w-full flex items-end justify-around gap-2 relative">
+<!-- Faux Chart Bars -->
+<div class="w-full bg-outline/20 rounded-t-sm h-[40%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[70%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[50%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[90%] relative group">
+<div class="absolute inset-0 bg-[#E8A33D] opacity-80 group-hover:opacity-100 transition-opacity rounded-t-sm shadow-[0_0_10px_rgba(232,163,61,0.3)]"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[60%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[30%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+<div class="w-full bg-outline/20 rounded-t-sm h-[80%] relative group">
+<div class="absolute inset-0 bg-[#2E7D74] opacity-50 group-hover:opacity-100 transition-opacity rounded-t-sm"></div>
+</div>
+</div>
+<div class="flex justify-around mt-2 text-on-tertiary-container text-xs opacity-70">
+<span>M</span><span>T</span><span>W</span><span class="text-[#E8A33D] font-bold opacity-100">T</span><span>F</span><span>S</span><span>S</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container font-label-sm text-label-sm fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-base flat no shadows h-[80px] md:hidden">
+<button class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-xl">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span>Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-xl">
+<span class="material-symbols-outlined mb-1" data-icon="check_circle">check_circle</span>
+<span>Habits</span>
+</button>
+<!-- Active Tab: Insights -->
+<button class="flex flex-col items-center justify-center text-secondary-container dark:text-secondary-fixed font-bold hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-xl">
+<span class="material-symbols-outlined mb-1" data-icon="insights" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span>Insights</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-xl">
+<span class="material-symbols-outlined mb-1" data-icon="self_improvement">self_improvement</span>
+<span>Calm</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-xl">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span>Profile</span>
+</button>
+</nav>
+</body></html>

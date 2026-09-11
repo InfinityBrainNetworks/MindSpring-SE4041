@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Habit Detail - MindSpring</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#141d1b",
+                    "surface": "#f2fcf8",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#e9f3ef",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#dbe5e1",
+                    "on-tertiary-fixed-variant": "#444844",
+                    "surface-dim": "#d2dcd9",
+                    "secondary-container": "#feb64e",
+                    "inverse-surface": "#293230",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#e0eae7",
+                    "tertiary-container": "#464946",
+                    "on-surface-variant": "#404947",
+                    "error": "#ba1a1a",
+                    "tertiary": "#2f3330",
+                    "on-background": "#141d1b",
+                    "outline-variant": "#bfc8c6",
+                    "on-tertiary-container": "#b5b8b3",
+                    "on-tertiary-fixed": "#191c1a",
+                    "outline": "#707977",
+                    "primary-fixed": "#b2eee7",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#97d1ca",
+                    "secondary-fixed-dim": "#ffb956",
+                    "on-secondary-container": "#714800",
+                    "on-primary-fixed-variant": "#0d4f4a",
+                    "surface-container": "#e6f0ec",
+                    "on-primary-fixed": "#00201d",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#f2fcf8",
+                    "secondary-fixed": "#ffddb5",
+                    "primary": "#003935",
+                    "tertiary-fixed-dim": "#c5c7c3",
+                    "tertiary-fixed": "#e1e3de",
+                    "primary-fixed-dim": "#97d1ca",
+                    "surface-variant": "#dbe5e1",
+                    "primary-container": "#10514c",
+                    "on-secondary-fixed": "#2a1800",
+                    "background": "#f2fcf8",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "surface-tint": "#2d6862",
+                    "surface-container-low": "#ecf6f2",
+                    "on-primary-container": "#88c2bb",
+                    "secondary": "#835400"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack_md": "16px",
+                    "stack_lg": "32px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "stack_sm": "8px",
+                    "card_padding": "20px",
+                    "screen_padding": "24px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "15px",
+                            {
+                                    "lineHeight": "22px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden selection:bg-secondary-container selection:text-on-secondary-container pb-24">
+<!-- Top Navigation App Bar (Specific to Habit Detail) -->
+<header class="bg-primary-container text-on-primary-container w-full px-screen_padding py-base flex justify-between items-center z-40 sticky top-0 shadow-sm shadow-surface-container-highest/20">
+<button aria-label="Go back" class="w-12 h-12 flex items-center justify-center rounded-full hover:bg-primary/10 transition-colors scale-95 active:scale-90">
+<span class="material-symbols-outlined text-on-primary-container">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold text-on-primary-container">Daily Meditation</h1>
+<div class="w-12 h-12 flex items-center justify-center">
+<!-- Placeholder for trailing actions if needed, empty to balance flex layout -->
+</div>
+</header>
+<main class="flex-grow w-full max-w-4xl mx-auto flex flex-col gap-stack_lg pt-stack_lg px-screen_padding">
+<!-- Header / Streak Hero Area -->
+<section class="bg-primary-container rounded-[20px] p-screen_padding shadow-md flex flex-col items-center justify-center text-center relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary opacity-20 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+<h2 class="font-display-lg text-display-lg text-on-primary-container mb-stack_md relative z-10">Daily Meditation</h2>
+<div class="flex flex-col items-center gap-stack_sm relative z-10">
+<div class="w-24 h-24 rounded-full bg-surface-container-lowest/10 flex items-center justify-center mb-base border-4 border-secondary-container/20 shadow-lg shadow-surface-container-highest/10">
+<span class="material-symbols-outlined text-[64px] text-secondary-container drop-shadow-md" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md font-bold text-secondary-container">12 Day Streak</span>
+<span class="font-body-md text-body-md text-on-primary-container/80">Keep it burning!</span>
+</div>
+</div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<section class="grid grid-cols-2 md:grid-cols-3 gap-gutter">
+<!-- Completion Rate -->
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] hover:scale-[0.98] transition-transform flex flex-col justify-between aspect-square md:aspect-auto">
+<div class="flex items-center gap-base mb-stack_md">
+<span class="material-symbols-outlined text-primary-container">donut_large</span>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Completion</h3>
+</div>
+<div>
+<span class="font-display-lg text-display-lg text-primary-container font-bold">85%</span>
+<p class="font-label-sm text-label-sm text-outline mt-1">This month</p>
+</div>
+<!-- Mini Progress bar -->
+<div class="w-full h-2 bg-outline/10 rounded-full mt-4 overflow-hidden">
+<div class="h-full bg-primary-container rounded-full w-[85%]"></div>
+</div>
+</div>
+<!-- Best Streak -->
+<div class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] hover:scale-[0.98] transition-transform flex flex-col justify-between aspect-square md:aspect-auto relative overflow-hidden">
+<!-- Highlight subtle gradient -->
+<div class="absolute inset-0 bg-gradient-to-br from-secondary-container/5 to-transparent z-0 pointer-events-none"></div>
+<div class="flex items-center gap-base mb-stack_md relative z-10">
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">emoji_events</span>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Best Streak</h3>
+</div>
+<div class="relative z-10">
+<span class="font-display-lg text-display-lg text-on-surface font-bold">15 <span class="font-title-md text-title-md text-outline font-normal">days</span></span>
+<p class="font-label-sm text-label-sm text-outline mt-1">Personal record</p>
+</div>
+</div>
+<!-- Total Days -->
+<div class="col-span-2 md:col-span-1 bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] hover:scale-[0.98] transition-transform flex flex-col justify-between">
+<div class="flex items-center gap-base mb-stack_md">
+<span class="material-symbols-outlined text-primary-container">calendar_month</span>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Total Days</h3>
+</div>
+<div class="flex justify-between items-end">
+<div>
+<span class="font-display-lg text-display-lg text-on-surface font-bold">42</span>
+<p class="font-label-sm text-label-sm text-outline mt-1">Since start</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">insights</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Heatmap Section (GitHub Style) -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex flex-col gap-stack_md">
+<div class="flex justify-between items-center">
+<h3 class="font-title-md text-title-md text-on-surface font-bold">Activity</h3>
+<span class="font-label-sm text-label-sm text-outline bg-surface-container px-3 py-1 rounded-full">Last 30 Days</span>
+</div>
+<div class="overflow-x-auto pb-2 -mx-2 px-2">
+<!-- Heatmap Grid -->
+<div class="flex flex-col gap-1 min-w-max">
+<!-- Days of week labels (optional, simplified for UI) -->
+<div class="flex gap-1 mb-1 opacity-50">
+<div class="w-8 text-center font-label-sm text-label-sm">M</div>
+<div class="w-8 text-center font-label-sm text-label-sm">T</div>
+<div class="w-8 text-center font-label-sm text-label-sm">W</div>
+<div class="w-8 text-center font-label-sm text-label-sm">T</div>
+<div class="w-8 text-center font-label-sm text-label-sm">F</div>
+<div class="w-8 text-center font-label-sm text-label-sm">S</div>
+<div class="w-8 text-center font-label-sm text-label-sm">S</div>
+</div>
+<!-- Week 1 -->
+<div class="flex gap-1">
+<div class="w-8 h-8 rounded-sm bg-primary-container/20"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/60"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/40"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/80"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/20"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/60"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+</div>
+<!-- Week 2 -->
+<div class="flex gap-1">
+<div class="w-8 h-8 rounded-sm bg-primary-container/80"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/20"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/40"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/60"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/20"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/80"></div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100"></div>
+</div>
+<!-- Week 3 -->
+<div class="flex gap-1">
+<div class="w-8 h-8 rounded-sm bg-primary-container/100 relative">
+<!-- Current streak indicator dot -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+</div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100 relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+</div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100 relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+</div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100 relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+</div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-primary-container/100 relative">
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+</div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-surface-container border border-dashed border-outline/30"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container border border-dashed border-outline/30"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container border border-dashed border-outline/30"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container border border-dashed border-outline/30"></div>
+<div class="w-8 h-8 rounded-sm bg-surface-container border border-dashed border-outline/30"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-2 justify-end">
+<span class="font-label-sm text-label-sm text-outline">Less</span>
+<div class="flex gap-1">
+<div class="w-4 h-4 rounded-sm bg-surface-container"></div>
+<div class="w-4 h-4 rounded-sm bg-primary-container/40"></div>
+<div class="w-4 h-4 rounded-sm bg-primary-container/80"></div>
+<div class="w-4 h-4 rounded-sm bg-primary-container/100"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">More</span>
+</div>
+</section>
+<!-- Action Buttons -->
+<section class="flex flex-col gap-stack_md mt-stack_md mb-stack_lg">
+<button class="w-full bg-secondary-container text-on-secondary-container rounded-full py-4 px-6 font-title-md text-title-md font-bold shadow-[0px_8px_30px_rgba(27,36,34,0.12)] hover:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                Complete for Today
+            </button>
+<div class="flex gap-gutter">
+<button class="flex-1 bg-surface-container-highest text-on-surface rounded-full py-3 px-4 font-body-md text-body-md font-bold shadow-sm hover:bg-surface-dim transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">edit</span>
+                    Edit Habit
+                </button>
+<button class="flex-1 bg-surface-container-lowest text-error border border-error/30 rounded-full py-3 px-4 font-body-md text-body-md font-bold hover:bg-error-container/20 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">delete</span>
+                    Delete
+                </button>
+</div>
+</section>
+</main>
+<!-- Exclude Navigation Shell per mandate for detail/focused screens -->
+</body></html>

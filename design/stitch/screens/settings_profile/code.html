@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MindSpring - Settings / Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "on-surface": "#141d1b",
+                      "surface": "#f2fcf8",
+                      "on-secondary": "#ffffff",
+                      "inverse-on-surface": "#e9f3ef",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#dbe5e1",
+                      "on-tertiary-fixed-variant": "#444844",
+                      "surface-dim": "#d2dcd9",
+                      "secondary-container": "#feb64e",
+                      "inverse-surface": "#293230",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#e0eae7",
+                      "tertiary-container": "#464946",
+                      "on-surface-variant": "#404947",
+                      "error": "#ba1a1a",
+                      "tertiary": "#2f3330",
+                      "on-background": "#141d1b",
+                      "outline-variant": "#bfc8c6",
+                      "on-tertiary-container": "#b5b8b3",
+                      "on-tertiary-fixed": "#191c1a",
+                      "outline": "#707977",
+                      "primary-fixed": "#b2eee7",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#97d1ca",
+                      "secondary-fixed-dim": "#ffb956",
+                      "on-secondary-container": "#714800",
+                      "on-primary-fixed-variant": "#0d4f4a",
+                      "surface-container": "#e6f0ec",
+                      "on-primary-fixed": "#00201d",
+                      "error-container": "#ffdad6",
+                      "surface-bright": "#f2fcf8",
+                      "secondary-fixed": "#ffddb5",
+                      "primary": "#003935",
+                      "tertiary-fixed-dim": "#c5c7c3",
+                      "tertiary-fixed": "#e1e3de",
+                      "primary-fixed-dim": "#97d1ca",
+                      "surface-variant": "#dbe5e1",
+                      "primary-container": "#10514c",
+                      "on-secondary-fixed": "#2a1800",
+                      "background": "#f2fcf8",
+                      "on-secondary-fixed-variant": "#643f00",
+                      "surface-tint": "#2d6862",
+                      "surface-container-low": "#ecf6f2",
+                      "on-primary-container": "#88c2bb",
+                      "secondary": "#835400",
+                      "danger-custom": "#C25E5E"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack_md": "16px",
+                      "stack_lg": "32px",
+                      "gutter": "16px",
+                      "base": "8px",
+                      "stack_sm": "8px",
+                      "card_padding": "20px",
+                      "screen_padding": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "title-md": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "15px",
+                              {
+                                      "lineHeight": "22px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F4F6F1; /* Pale sage background override to match spec */
+            color: #141d1b; /* on-surface */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom soft shadows */
+        .shadow-level-1 {
+            box-shadow: 0px 4px 20px rgba(27, 36, 34, 0.06);
+        }
+        
+        /* Toggle Switch Customization */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10514C; /* primary-container */
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10514C; /* primary-container */
+        }
+        .toggle-checkbox {
+            right: 0;
+            z-index: 1;
+            border-color: #e2e8f0;
+            transition: all 0.3s;
+        }
+        .toggle-label {
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-label::after {
+            content: '';
+            position: absolute;
+            top: 0.125rem;
+            left: 0.125rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-checkbox:checked + .toggle-label::after {
+            transform: translateX(1.5rem);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md min-h-screen flex flex-col items-center pb-24">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 bg-primary-container flex justify-between items-center w-full px-screen_padding py-base shadow-none z-40 fixed">
+<button aria-label="Menu" class="scale-95 active:scale-90 transition-transform text-on-primary-container hover:bg-primary/10 rounded-full p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg text-display-lg font-bold text-on-primary-container text-center flex-1">MindSpring</h1>
+<div class="scale-95 active:scale-90 transition-transform hover:bg-primary/10 rounded-full w-10 h-10 overflow-hidden cursor-pointer">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A small circular avatar showing a calm, abstract botanical illustration featuring smooth green leaves and warm sunlight, set against a soft, pale background. Designed in a modern, serene digital style suitable for a corporate but tactile mental health app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZ7PQKx7J6k6NRXYilSMYor7x5VkH70WwfRHdzr6m5bnye8j5fl_9qE8x6fBjOA5ZB1iQiHWLhgW1uEwGZR0XGbvOjvhBHPqquU71EmFTAdOTwFf9yeOB3uHjxqqQzpyJdyn2EHraeRdACFT0z0JKerthMZLvrKqWjJq67vCK2jQobyk4GTJP1TYgIJeWpBCGf2WjnZ-H-gW0OrIVd10RWXqNItLtJzHAbmCm5HlKiYP00wTQu3dAT"/>
+</div>
+</header>
+<main class="w-full max-w-md px-screen_padding pt-24 pb-stack_lg flex flex-col gap-stack_lg flex-grow mt-4">
+<!-- Profile Header -->
+<section class="flex flex-col items-center pt-stack_md">
+<div class="relative mb-4">
+<div class="w-24 h-24 rounded-full overflow-hidden shadow-level-1 border-4 border-surface-container-lowest">
+<img alt="Asan Avatar" class="w-full h-full object-cover" data-alt="A detailed portrait avatar of a serene individual named Asan, in a modern, soft illustrative style matching the Grounded Vitality aesthetic. Soft lighting, sage and warm amber accents, highly detailed, expressive, designed for a tactile corporate UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRXRIpoc8WOTJ5a17HSkF0vmS9BG8W74I9VJMTymsiRJID7CC4dieJGVhihKzporOh8-RHmGj9DoGqmwL2m-6vd2nckPbqMQ88O5COOkYXkN_5eKvJ3KVWJ-_N0QHlT60UaOoHebvMndULfxTe_m3MRYT-8jzIxqrtOtP1ZRX--Xc9qa4T0uAViACBY6TkwEZBBIH92QzEnAGm8NnV_WuJ6jx4f1vNtBmtfFXyxF6Q52a0yggrrrE5"/>
+</div>
+<button aria-label="Edit Avatar" class="absolute bottom-0 right-0 bg-primary-container text-on-primary-container rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-surface-tint transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface">Asan</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Member since Aug 2026</p>
+</section>
+<!-- Settings Group -->
+<section class="flex flex-col gap-base">
+<div class="bg-surface-container-lowest rounded-[20px] shadow-level-1 overflow-hidden flex flex-col">
+<!-- Edit Profile -->
+<button class="w-full px-card_padding py-4 flex items-center justify-between hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary-container">person</span>
+<span class="font-body-md text-body-md text-on-surface">Edit Profile</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<div class="h-[1px] w-full bg-surface-variant mx-4 w-[calc(100%-32px)]"></div>
+<!-- Reminders -->
+<button class="w-full px-card_padding py-4 flex items-center justify-between hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary-container">notifications</span>
+<span class="font-body-md text-body-md text-on-surface">Reminders</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<div class="h-[1px] w-full bg-surface-variant mx-4 w-[calc(100%-32px)]"></div>
+<!-- Dark Mode Toggle -->
+<div class="w-full px-card_padding py-4 flex items-center justify-between hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary-container">dark_mode</span>
+<span class="font-body-md text-body-md text-on-surface">Dark Mode</span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer opacity-0" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer" for="toggle"></label>
+</div>
+</div>
+<div class="h-[1px] w-full bg-surface-variant mx-4 w-[calc(100%-32px)]"></div>
+<!-- Export Data -->
+<button class="w-full px-card_padding py-4 flex items-center justify-between hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary-container">download</span>
+<span class="font-body-md text-body-md text-on-surface">Export Data</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<div class="h-[1px] w-full bg-surface-variant mx-4 w-[calc(100%-32px)]"></div>
+<!-- About -->
+<button class="w-full px-card_padding py-4 flex items-center justify-between hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary-container">info</span>
+<span class="font-body-md text-body-md text-on-surface">About</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="mt-stack_sm">
+<button class="w-full bg-surface-container-lowest rounded-[20px] shadow-level-1 px-card_padding py-4 flex items-center justify-between hover:bg-error-container/20 transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-danger-custom">delete_forever</span>
+<span class="font-body-md text-body-md text-danger-custom font-semibold">Clear All Data</span>
+</div>
+</button>
+</section>
+<!-- Disclaimer Caption -->
+<p class="font-label-sm text-label-sm text-center text-on-surface-variant mt-stack_lg px-4 opacity-80">
+            MindSpring is a self-reflection tool and not medical advice.
+        </p>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-base bg-primary-container shadow-none">
+<!-- Home -->
+<a class="scale-110 duration-200 ease-out flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Habits -->
+<a class="scale-110 duration-200 ease-out flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">check_circle</span>
+<span class="font-label-sm text-label-sm">Habits</span>
+</a>
+<!-- Insights -->
+<a class="scale-110 duration-200 ease-out flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">insights</span>
+<span class="font-label-sm text-label-sm">Insights</span>
+</a>
+<!-- Calm -->
+<a class="scale-110 duration-200 ease-out flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined mb-1">self_improvement</span>
+<span class="font-label-sm text-label-sm">Calm</span>
+</a>
+<!-- Profile (Active) -->
+<a class="scale-110 duration-200 ease-out flex flex-col items-center justify-center text-secondary-container font-bold hover:bg-primary/20 transition-colors p-2 rounded-lg min-w-[64px]" href="#">
+<span class="material-symbols-outlined fill mb-1">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple script to handle visual states for touch/active elements
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('touchstart', () => btn.classList.add('scale-[0.98]'));
+            btn.addEventListener('touchend', () => btn.classList.remove('scale-[0.98]'));
+        });
+    </script>
+</body></html>

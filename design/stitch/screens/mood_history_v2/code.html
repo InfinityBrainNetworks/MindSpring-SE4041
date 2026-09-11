@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MindSpring - Mood History</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from Style Guidance -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface-variant": "#404947",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "inverse-primary": "#97d1ca",
+                    "surface": "#f2fcf8",
+                    "primary-fixed-dim": "#97d1ca",
+                    "surface-container-low": "#ecf6f2",
+                    "surface-bright": "#f2fcf8",
+                    "primary": "#003935",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#e6f0ec",
+                    "surface-container-high": "#e0eae7",
+                    "outline": "#707977",
+                    "tertiary-fixed": "#e1e3de",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#ffb956",
+                    "on-tertiary-container": "#b5b8b3",
+                    "inverse-on-surface": "#e9f3ef",
+                    "on-secondary-container": "#714800",
+                    "inverse-surface": "#293230",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#191c1a",
+                    "background": "#f2fcf8",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#dbe5e1",
+                    "on-primary-fixed-variant": "#0d4f4a",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#c5c7c3",
+                    "primary-fixed": "#b2eee7",
+                    "surface-dim": "#d2dcd9",
+                    "secondary-fixed": "#ffddb5",
+                    "secondary-container": "#feb64e",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#bfc8c6",
+                    "on-secondary-fixed": "#2a1800",
+                    "on-primary-fixed": "#00201d",
+                    "on-surface": "#141d1b",
+                    "primary-container": "#10514c",
+                    "on-primary-container": "#88c2bb",
+                    "surface-variant": "#dbe5e1",
+                    "on-background": "#141d1b",
+                    "tertiary-container": "#464946",
+                    "on-tertiary-fixed-variant": "#444844",
+                    "surface-tint": "#2d6862",
+                    "secondary": "#835400",
+                    "tertiary": "#2f3330"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "screen_padding": "24px",
+                    "stack_sm": "8px",
+                    "card_padding": "20px",
+                    "stack_lg": "32px",
+                    "base": "8px",
+                    "stack_md": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "15px",
+                            {
+                                    "lineHeight": "22px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F4F6F1; /* Level 0 Background */
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .card-shadow {
+            box-shadow: 0px 4px 20px rgba(27, 36, 34, 0.06);
+        }
+        
+        .card-hover:active {
+            transform: scale(0.98);
+            box-shadow: 0px 8px 30px rgba(27, 36, 34, 0.12);
+        }
+        
+        /* Hide scrollbar for calendar view */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background pb-24 md:pb-0 pt-16 md:pt-0">
+<!-- TopAppBar (Web & Mobile) -->
+<header aria-label="Top Navigation" class="bg-surface dark:bg-surface-dim fixed top-0 w-full z-50 flex items-center justify-between px-screen_padding h-16 w-full hidden md:flex">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant flex items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors duration-150 active:scale-95">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a single dew drop resting on a vibrant green fern leaf, catching the soft morning sunlight. The background is a soft, blurry mix of botanical greens and earthy tones, conveying a sense of fresh vitality and natural calm. The lighting is diffused and gentle, creating a modern, soothing aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJF9Vdcx3l75ypbuH6LUjLMRgPWDkmi57PD1xKzSrh3v5s64FzxDxu3useA_pE6h2HFeLf7vBlHSiI6Xyvu25VpyNqNp9eXZVixG8ofrl_IqcNtKT-dVdW5s5RyV9nxWloCIIIntu0BhROF-b0RrwORU2ZyWMjGR7jFjM3YG1vcw6ZJmKQR1yvJOkscxrmzLbaYSTWW86TeCyryojCl1iylTgduWEgnF4uun8D075ysAAbWWDRhdTH"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary dark:text-inverse-primary tracking-tight">MindSpring</h1>
+</div>
+<div class="flex items-center gap-6">
+<!-- Nav Cluster Web -->
+<nav class="flex gap-6 items-center">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+                    Home
+                </a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">check_circle</span>
+                    Habits
+                </a>
+<a class="font-label-sm text-label-sm text-primary flex flex-col items-center px-3 py-2 rounded-lg bg-surface-container" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">insights</span>
+                    Insights
+                </a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">self_improvement</span>
+                    Calm
+                </a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg flex flex-col items-center" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+                    Profile
+                </a>
+</nav>
+<button aria-label="Settings" class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low transition-colors duration-150 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Mobile Top App Bar -->
+<header aria-label="Top Navigation Mobile" class="bg-surface dark:bg-surface-dim fixed top-0 w-full z-50 flex items-center justify-between px-screen_padding h-16 w-full md:hidden">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant flex items-center justify-center cursor-pointer active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="A close-up abstract composition of layered, smooth stones stacked in perfect balance against a soft, sage green background. The lighting is soft and ambient, casting gentle shadows that emphasize the rounded, tactile nature of the stones. The overall mood is deeply serene, meditative, and grounded." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_TnrCRZfOSY2GyGy4cFbDumQ52bEpvxN82kKWTSDAFlCwAIkfNrGqXA-I7yxcDEAL8la6LYmKfesprrxneCOzdgP1wN0regMDV9ZvZ5VvUn4Mt-hTDjMXowbYUA0Fu69adOz2toRSUL2aZhNVR8Rf43keBE8HrtBeBkV-pZK7MQyMKLa1mfReNmQSH8jgjo9DOQe8252Ln9wIEl2dQF4C3Gb5aS7I7toNiZ2aL-czF8wB1lQkS4oL"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary dark:text-inverse-primary tracking-tight">MindSpring</h1>
+</div>
+<button aria-label="Settings" class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low transition-colors duration-150 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="max-w-4xl mx-auto px-screen_padding md:pt-24 pb-8 min-h-screen">
+<!-- Header Section -->
+<div class="mb-stack_lg">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-stack_sm">Mood History</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Review your recent reflections and emotional patterns.</p>
+</div>
+<!-- Weekly Calendar Strip View -->
+<section aria-label="Weekly Calendar Navigation" class="mb-stack_lg">
+<div class="flex justify-between items-center mb-stack_md">
+<h3 class="font-title-md text-title-md text-on-surface">This Week</h3>
+<button class="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors font-semibold flex items-center gap-1">
+                    Month View <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2 pt-2 -mx-2 px-2">
+<!-- Day Card Inactive -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface rounded-[16px] card-shadow flex flex-col items-center justify-center gap-1 transition-transform card-hover border border-transparent hover:border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Mon</span>
+<span class="font-title-md text-title-md text-on-surface">12</span>
+</button>
+<!-- Day Card Inactive -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface rounded-[16px] card-shadow flex flex-col items-center justify-center gap-1 transition-transform card-hover border border-transparent hover:border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Tue</span>
+<span class="font-title-md text-title-md text-on-surface">13</span>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary-container mt-1"></div> <!-- Indicates entry -->
+</button>
+<!-- Day Card Inactive -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface rounded-[16px] card-shadow flex flex-col items-center justify-center gap-1 transition-transform card-hover border border-transparent hover:border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Wed</span>
+<span class="font-title-md text-title-md text-on-surface">14</span>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary-container mt-1"></div>
+</button>
+<!-- Day Card Active (Today) -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-primary-container rounded-[16px] card-shadow flex flex-col items-center justify-center gap-1 transition-transform card-hover ring-2 ring-primary ring-offset-2 ring-offset-[#F4F6F1]">
+<span class="font-label-sm text-label-sm text-on-primary-container uppercase">Thu</span>
+<span class="font-title-md text-title-md text-on-primary">15</span>
+<div class="w-1.5 h-1.5 rounded-full bg-secondary mt-1"></div>
+</button>
+<!-- Day Card Future -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface/50 rounded-[16px] flex flex-col items-center justify-center gap-1 border border-dashed border-outline-variant opacity-70 cursor-default">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Fri</span>
+<span class="font-title-md text-title-md text-on-surface-variant">16</span>
+</button>
+<!-- Day Card Future -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface/50 rounded-[16px] flex flex-col items-center justify-center gap-1 border border-dashed border-outline-variant opacity-70 cursor-default">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Sat</span>
+<span class="font-title-md text-title-md text-on-surface-variant">17</span>
+</button>
+<!-- Day Card Future -->
+<button class="flex-shrink-0 w-[60px] h-[80px] bg-surface/50 rounded-[16px] flex flex-col items-center justify-center gap-1 border border-dashed border-outline-variant opacity-70 cursor-default">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Sun</span>
+<span class="font-title-md text-title-md text-on-surface-variant">18</span>
+</button>
+</div>
+</section>
+<!-- Timeline Section -->
+<section aria-label="Timeline of Entries">
+<div class="relative border-l-2 border-surface-variant ml-4 md:ml-8 pl-8 space-y-stack_lg">
+<!-- Entry 1 -->
+<div class="relative">
+<!-- Timeline Node -->
+<div class="absolute -left-[41px] top-4 w-5 h-5 rounded-full bg-surface border-4 border-secondary-container z-10 shadow-sm"></div>
+<!-- Content Card -->
+<article class="bg-surface rounded-[20px] p-card_padding card-shadow transition-all duration-200 card-hover">
+<div class="flex justify-between items-start mb-stack_sm">
+<div class="flex items-center gap-3">
+<!-- Mood Emoji Representation (Using color and icon as placeholder for complex emoji) -->
+<div class="w-12 h-12 rounded-full bg-[#E8A33D]/20 flex items-center justify-center text-[24px]">
+                                    😊
+                                </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Calm &amp; Focused</h4>
+<time class="font-label-sm text-label-sm text-on-surface-variant">Today, 9:30 AM</time>
+</div>
+</div>
+<button aria-label="More options" class="text-on-surface-variant hover:text-primary transition-colors p-2">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-3">
+                            Started the morning with a 15-minute meditation. Feeling grounded and ready to tackle the difficult reading assignment for sociology. The weather is beautiful which helps.
+                        </p>
+<div class="flex gap-2 mt-4 flex-wrap">
+<span class="px-3 py-1 rounded-full bg-surface-container-low border border-surface-variant font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">self_improvement</span> Meditation
+                            </span>
+<span class="px-3 py-1 rounded-full bg-surface-container-low border border-surface-variant font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">book</span> Reading
+                            </span>
+</div>
+</article>
+</div>
+<!-- Entry 2 -->
+<div class="relative">
+<div class="absolute -left-[41px] top-4 w-5 h-5 rounded-full bg-surface border-4 border-primary z-10 shadow-sm"></div>
+<article class="bg-surface rounded-[20px] p-card_padding card-shadow transition-all duration-200 card-hover">
+<div class="flex justify-between items-start mb-stack_sm">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-[24px]">
+                                    😌
+                                </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Content</h4>
+<time class="font-label-sm text-label-sm text-on-surface-variant">Yesterday, 8:00 PM</time>
+</div>
+</div>
+<button aria-label="More options" class="text-on-surface-variant hover:text-primary transition-colors p-2">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-3">
+                            Finished the group project meeting. It went better than expected. Taking some time to unwind with a good book before bed.
+                        </p>
+</article>
+</div>
+<!-- Entry 3 (Slightly negative mood) -->
+<div class="relative">
+<div class="absolute -left-[41px] top-4 w-5 h-5 rounded-full bg-surface border-4 border-outline z-10 shadow-sm"></div>
+<article class="bg-surface rounded-[20px] p-card_padding card-shadow transition-all duration-200 card-hover">
+<div class="flex justify-between items-start mb-stack_sm">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-[24px]">
+                                    🫤
+                                </div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Anxious</h4>
+<time class="font-label-sm text-label-sm text-on-surface-variant">Tuesday, 2:15 PM</time>
+</div>
+</div>
+<button aria-label="More options" class="text-on-surface-variant hover:text-primary transition-colors p-2">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-3">
+                            Feeling overwhelmed by the upcoming midterms. There feels like too much material to cover. I need to break down the study schedule.
+                        </p>
+<div class="mt-4 p-3 bg-surface-container-low rounded-lg border border-surface-variant flex items-start gap-3">
+<span class="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">
+<strong>MindSpring Tip:</strong> When feeling overwhelmed, try the 5-4-3-2-1 grounding exercise.
+                             </p>
+</div>
+</article>
+</div>
+</div>
+<!-- Load More -->
+<div class="mt-stack_lg flex justify-center pb-8">
+<button class="px-6 py-3 rounded-full bg-surface border border-outline-variant font-title-md text-title-md text-primary hover:bg-surface-container-low transition-colors card-shadow flex items-center gap-2">
+<span class="material-symbols-outlined">history</span> Load Older Entries
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav aria-label="Bottom Navigation" class="bg-primary dark:bg-primary-container fixed bottom-0 w-full z-50 flex justify-around items-center h-20 px-4 pb-safe md:hidden">
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all active:scale-95 duration-200 w-16 h-full rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all active:scale-95 duration-200 w-16 h-full rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">check_circle</span>
+<span class="font-label-sm text-label-sm">Habits</span>
+</a>
+<!-- Active Tab: Insights maps best to History -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim active:scale-95 duration-200 w-16 h-full rounded-xl relative after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-secondary after:rounded-full" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="font-label-sm text-label-sm">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all active:scale-95 duration-200 w-16 h-full rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">self_improvement</span>
+<span class="font-label-sm text-label-sm">Calm</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all active:scale-95 duration-200 w-16 h-full rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

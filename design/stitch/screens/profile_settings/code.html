@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile &amp; Settings - MindSpring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#404947",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "inverse-primary": "#97d1ca",
+                        "surface": "#f2fcf8",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-container-low": "#ecf6f2",
+                        "surface-bright": "#f2fcf8",
+                        "primary": "#003935",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#e6f0ec",
+                        "surface-container-high": "#e0eae7",
+                        "outline": "#707977",
+                        "tertiary-fixed": "#e1e3de",
+                        "on-primary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-tertiary-container": "#b5b8b3",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-secondary-container": "#714800",
+                        "inverse-surface": "#293230",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#191c1a",
+                        "background": "#f2fcf8",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "primary-fixed": "#b2eee7",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-fixed": "#ffddb5",
+                        "secondary-container": "#feb64e",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#bfc8c6",
+                        "on-secondary-fixed": "#2a1800",
+                        "on-primary-fixed": "#00201d",
+                        "on-surface": "#141d1b",
+                        "primary-container": "#10514c",
+                        "on-primary-container": "#88c2bb",
+                        "surface-variant": "#dbe5e1",
+                        "on-background": "#141d1b",
+                        "tertiary-container": "#464946",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-tint": "#2d6862",
+                        "secondary": "#835400",
+                        "tertiary": "#2f3330"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "screen_padding": "24px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "stack_lg": "32px",
+                        "base": "8px",
+                        "stack_md": "16px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "display-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background font-body-md antialiased pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface dark:bg-surface-dim flex items-center justify-between px-screen_padding h-16 w-full">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A small, soft-focus portrait of a young professional in a light-filled room, wearing casual corporate attire. The lighting is bright and supportive, with a botanical color palette featuring deep sage greens and warm amber accents. The image is cropped closely on the face and shoulders, conveying a sense of grounded vitality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDINoZ-tzxHzl8l6d4D79DIFm8CTAkRGdf3VJKZ2Jl79obTrsBvpteVeNhYI0SwpHAjvuIDMLXMwd7dqbcEknRV_FHqcrE9cRuKhtGedXVqIuCaoroRZuAONvZ7Nm72KROL2ki0ZDydy5VAQityKR4t5mB8fP_4YcSCdqoj4TI5WjgFQyWMzbX29kwqRZHKAFurEn_Wdl4RXQ2OcFtQca5jTMkUSBYMvi04qcQOjDb_kdmyanYGg7By"/>
+</div>
+<h1 class="font-display-lg text-display-lg text-primary dark:text-inverse-primary tracking-tight">MindSpring</h1>
+</div>
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors p-2 rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-24 px-screen_padding max-w-2xl mx-auto flex flex-col gap-stack_lg">
+<!-- Profile Header Card -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0px_4px_20px_rgba(27,36,34,0.06)] flex flex-col items-center gap-stack_md text-center transform transition-transform hover:scale-[0.98] duration-200">
+<div class="w-24 h-24 rounded-full overflow-hidden border-4 border-primary-container/10">
+<img alt="Asan Avatar" class="w-full h-full object-cover" data-alt="A clear, welcoming portrait of a young professional named Asan. He is in a brightly lit, modern environment with soft, diffuse lighting. The background features subtle botanical elements like deep teal leaves, and warm amber light filtering through. The overall aesthetic is calm, supportive, and grounded in vitality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLLACW2ZFjvwt4p26rS1_TYaaKCwPlW7e_hjG18BfPd4POnX3c_T9jei-EO6aEcv-KE_Mroa0zpvMJIowzunwTprK2nnhPlK2VgN0BZ209xDkW1dXJXP33gJnQPhDNiIXZ2rOXTHU62-bK8yzHURV3BAz2jUugoqieFYXznwIchkUGeQbd4kDVcJakDrBE3k_tS6QtiG8Ch_SYhdw1rA_GQhJF-UkF6VGSQOoPqCJncxnCPRbJ_0PN"/>
+</div>
+<div>
+<h2 class="font-title-md text-title-md text-on-surface">Asan</h2>
+<div class="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-surface-container-high rounded-full">
+<span class="material-symbols-outlined text-[16px] text-primary-container">verified</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Member since 2023</span>
+</div>
+</div>
+</section>
+<!-- Settings List -->
+<section class="flex flex-col gap-2">
+<h3 class="font-title-md text-title-md text-on-surface mb-2 px-2">Account Settings</h3>
+<div class="bg-surface-container-lowest rounded-[20px] shadow-[0px_4px_20px_rgba(27,36,34,0.06)] overflow-hidden">
+<!-- Personal Information -->
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors group border-b border-surface-variant/50" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Personal Information</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</a>
+<!-- Notifications -->
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors group border-b border-surface-variant/50" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</a>
+<!-- App Theme -->
+<div class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors group border-b border-surface-variant/50">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">App Theme</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Data Privacy -->
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors group border-b border-surface-variant/50" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">shield</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Data Privacy</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</a>
+<!-- Export My Data -->
+<a class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors group" href="#">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface">Export My Data</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Sign Out Button -->
+<button class="mt-4 px-6 py-3 rounded-full border border-outline/40 text-primary-container font-title-md text-title-md hover:bg-surface-container-low transition-colors w-full sm:w-auto self-center">
+            Sign Out
+        </button>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-primary dark:bg-primary-container flex justify-around items-center h-20 w-full px-4 pb-safe md:hidden shadow-[0px_-4px_20px_rgba(27,36,34,0.06)]">
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all p-2 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all p-2 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">check_circle</span>
+<span class="font-label-sm text-label-sm mt-1">Habits</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all p-2 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">insights</span>
+<span class="font-label-sm text-label-sm mt-1">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary/70 dark:text-on-primary-container/70 hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all p-2 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">self_improvement</span>
+<span class="font-label-sm text-label-sm mt-1">Calm</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-primary-container/50 dark:hover:bg-primary/50 transition-all p-2 rounded-lg group scale-95 duration-200" href="#">
+<span class="material-symbols-outlined fill group-hover:scale-110 transition-transform">person</span>
+<span class="font-label-sm text-label-sm mt-1 font-semibold">Profile</span>
+</a>
+</nav>
+</body></html>

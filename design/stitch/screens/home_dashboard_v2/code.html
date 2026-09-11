@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Home Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", {"lineHeight": "22px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "display-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "title-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    },
+                    "animation": {
+                        "float": "float 3s ease-in-out infinite",
+                        "float-delayed": "float 3s ease-in-out 1.5s infinite",
+                        "fade-in-up": "fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+                        "pulse-glow": "pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+                    },
+                    "keyframes": {
+                        "float": {
+                            "0%, 100%": { transform: "translateY(0)" },
+                            "50%": { transform: "translateY(-5px)" }
+                        },
+                        "fadeInUp": {
+                            "0%": { opacity: "0", transform: "translateY(20px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        },
+                        "pulseGlow": {
+                            "0%, 100%": { opacity: "1", filter: "drop-shadow(0 0 2px rgba(254, 182, 78, 0.6))" },
+                            "50%": { opacity: ".8", filter: "drop-shadow(0 0 6px rgba(254, 182, 78, 0.8))" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+        body { background-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+        .shadow-ambient { box-shadow: 0px 4px 20px rgba(27, 36, 34, 0.06); }
+        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card-hover:hover { box-shadow: 0px 8px 30px rgba(27, 36, 34, 0.08); }
+        .card-hover:active { transform: scale(0.98); box-shadow: 0px 4px 16px rgba(27, 36, 34, 0.04); }
+        .btn-active:active { transform: scale(0.95); transition: transform 0.1s; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Checkbox Fill Animation */
+        .checkbox-anim {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .checkbox-container:active .checkbox-anim {
+            transform: scale(0.8);
+        }
+        .checkbox-container.checked .checkbox-anim {
+            font-variation-settings: 'FILL' 1;
+            transform: scale(1.1);
+            color: #10514c; /* primary-container */
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="text-on-surface antialiased flex justify-center pb-24">
+<!-- Shader Background -->
+<div id="canvas-container"></div>
+<script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    const vertexShader = `
+        varying vec2 v_texCoord;
+        void main() {
+            v_texCoord = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `;
+
+    const fragmentShader = `
+precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+void main() {
+    vec2 uv = v_texCoord;
+    
+    // Create a slow-moving, organic gradient
+    vec3 color1 = vec3(0.06, 0.32, 0.30); // Deep Teal #10514C
+    vec3 color2 = vec3(0.96, 0.96, 0.95); // Pale Sage #F4F6F1
+    
+    float noise = sin(uv.x * 3.0 + u_time * 0.5) * cos(uv.y * 3.0 + u_time * 0.4);
+    noise += sin(uv.x * 5.0 - u_time * 0.3) * cos(uv.y * 2.0 + u_time * 0.2);
+    
+    float mixFactor = clamp(noise * 0.5 + 0.5, 0.0, 1.0);
+    vec3 color = mix(color1, color2, mixFactor * 0.2 + 0.1); // Keep it subtle
+    
+    gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+    const material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+            u_time: { value: 0 },
+            u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        }
+    });
+
+    const geometry = new THREE.PlaneGeometry(2, 2);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    function animate(time) {
+        requestAnimationFrame(animate);
+        material.uniforms.u_time.value = time * 0.001;
+        renderer.render(scene, camera);
+    }
+
+    animate(0);
+
+    window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        material.uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+    });
+</script>
+<!-- Top App Bar Cluster (Mobile Hidden, Web Visible) -->
+<header class="hidden md:flex justify-between items-center w-full px-screen_padding py-base bg-primary-container docked full-width top-0 sticky z-40 transition-colors shadow-sm">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-primary-container cursor-pointer hover:bg-primary/10 p-2 rounded-full scale-95 active:scale-90 transition-transform btn-active">menu</button>
+<span class="font-display-lg text-display-lg font-bold text-on-primary-container">MindSpring</span>
+</div>
+<div class="flex items-center gap-6">
+<nav class="flex gap-6">
+<a class="text-on-primary-container font-bold hover:bg-primary/10 transition-colors px-3 py-2 rounded-md btn-active" href="#">Home</a>
+<a class="text-on-primary-container opacity-70 hover:bg-primary/10 transition-colors px-3 py-2 rounded-md btn-active" href="#">Habits</a>
+<a class="text-on-primary-container opacity-70 hover:bg-primary/10 transition-colors px-3 py-2 rounded-md btn-active" href="#">Insights</a>
+<a class="text-on-primary-container opacity-70 hover:bg-primary/10 transition-colors px-3 py-2 rounded-md btn-active" href="#">Calm</a>
+</nav>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant cursor-pointer hover:ring-2 ring-primary-container transition-all btn-active">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A small circular user profile picture featuring a stylized illustration of a person with dark hair against a soft teal background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxJ3RrH0Q5UOfITOtKb8UfMdXsi722yHxKoTehjAQZhD6f8pwZACsu_IepUaEwWykofryGDQKGm2nHYIkmgDWsARsj6HFtXOdNLVeIAifEBhDUDfJ13YYMLWby1O5kzXz2dxKAveIJjIIqbugrDhYCNm6gU5VB4Fn_iTaRCD1o3Oj8T3o1qN4RKQ92wMNDJBrRbOYcQ60OR76_Wm5fypRN0S6kWinkP1wT6l4N3c3gmZMBaSDHQHxn"/>
+</button>
+</div>
+</header>
+<div class="w-full max-w-md md:max-w-4xl px-screen_padding pt-stack_lg flex flex-col gap-stack_lg">
+<!-- Mobile Header -->
+<header class="md:hidden flex justify-between items-center bg-primary-container -mx-screen_padding px-screen_padding py-4 rounded-b-xl shadow-ambient animate-fade-in-up stagger-1">
+<div>
+<h1 class="font-title-md text-title-md text-on-primary">Good evening, Asan</h1>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-primary text-on-primary hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors btn-active">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex flex-col gap-stack_md md:grid md:grid-cols-12 md:gap-gutter">
+<!-- Hero Mood Card -->
+<section class="bg-primary-container text-on-primary rounded-[20px] p-card_padding shadow-ambient card-hover flex flex-col items-center gap-4 md:col-span-12 animate-fade-in-up stagger-2">
+<h2 class="font-title-md text-title-md text-center">How are you feeling today?</h2>
+<div class="flex justify-between w-full max-w-xs px-4">
+<!-- Mood Icons -->
+<button class="group flex flex-col items-center gap-2 transition-transform hover:scale-110 focus:outline-none btn-active">
+<div class="w-12 h-12 rounded-full bg-[#C25E5E]/20 flex items-center justify-center border-2 border-transparent focus:border-secondary-container transition-colors">
+<span class="text-3xl animate-float">😫</span>
+</div>
+</button>
+<button class="group flex flex-col items-center gap-2 transition-transform hover:scale-110 focus:outline-none btn-active">
+<div class="w-12 h-12 rounded-full bg-[#D68B5E]/20 flex items-center justify-center border-2 border-transparent focus:border-secondary-container transition-colors">
+<span class="text-3xl animate-float-delayed">😕</span>
+</div>
+</button>
+<button class="group flex flex-col items-center gap-2 transition-transform hover:scale-110 focus:outline-none btn-active">
+<div class="w-12 h-12 rounded-full bg-[#E5D26C]/20 flex items-center justify-center border-2 border-transparent focus:border-secondary-container transition-colors">
+<span class="text-3xl animate-float">😐</span>
+</div>
+</button>
+<button class="group flex flex-col items-center gap-2 transition-transform hover:scale-110 focus:outline-none btn-active">
+<div class="w-12 h-12 rounded-full bg-[#A2C181]/20 flex items-center justify-center border-2 border-transparent focus:border-secondary-container transition-colors">
+<span class="text-3xl animate-float-delayed">🙂</span>
+</div>
+</button>
+<button class="group flex flex-col items-center gap-2 transition-transform hover:scale-110 focus:outline-none btn-active">
+<div class="w-12 h-12 rounded-full bg-[#4E8F7C]/20 flex items-center justify-center border-2 border-transparent focus:border-secondary-container transition-colors">
+<span class="text-3xl animate-float">😄</span>
+</div>
+</button>
+</div>
+<button class="mt-2 bg-secondary-container text-on-secondary-container px-6 py-3 rounded-full font-title-md text-body-md shadow-sm hover:bg-secondary-fixed transition-colors w-full max-w-xs btn-active">
+                    Check in
+                </button>
+</section>
+<!-- Today's Habits -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-ambient card-hover md:col-span-7 flex flex-col gap-4 animate-fade-in-up stagger-3">
+<div class="flex justify-between items-end">
+<h2 class="font-title-md text-title-md text-on-surface">Today's Habits</h2>
+<span class="font-label-sm text-label-sm text-outline">2 of 4 complete</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-2 bg-outline/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-1/2 rounded-full transition-all duration-500 ease-out"></div>
+</div>
+<div class="flex flex-col gap-2 mt-2">
+<!-- Habit Item (Checked) -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-3">
+<button class="text-primary-container btn-active"><span class="material-symbols-outlined checkbox-anim">check_circle</span></button>
+<span class="font-body-md text-body-md text-on-surface line-through opacity-70">Read for 30m</span>
+</div>
+</div>
+<!-- Habit Item (Checked) -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low/50">
+<div class="flex items-center gap-3">
+<button class="text-primary-container btn-active"><span class="material-symbols-outlined checkbox-anim">check_circle</span></button>
+<span class="font-body-md text-body-md text-on-surface line-through opacity-70">Meditation</span>
+</div>
+</div>
+<!-- Habit Item (Unchecked) -->
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer checkbox-container" onclick="this.classList.toggle('checked')">
+<div class="flex items-center gap-3">
+<button class="text-outline group-hover:text-primary-container transition-colors btn-active"><span class="material-symbols-outlined checkbox-anim" style="font-variation-settings: 'FILL' 0;">radio_button_unchecked</span></button>
+<span class="font-body-md text-body-md text-on-surface">Study 2h</span>
+</div>
+</div>
+<!-- Habit Item (Unchecked) -->
+<div class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-container-low transition-colors group cursor-pointer checkbox-container" onclick="this.classList.toggle('checked')">
+<div class="flex items-center gap-3">
+<button class="text-outline group-hover:text-primary-container transition-colors btn-active"><span class="material-symbols-outlined checkbox-anim" style="font-variation-settings: 'FILL' 0;">radio_button_unchecked</span></button>
+<span class="font-body-md text-body-md text-on-surface">Drink Water</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Streaks & Gratitude Container for Web -->
+<div class="flex flex-col gap-stack_md md:col-span-5 h-full">
+<!-- Current Streaks -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-ambient card-hover flex-1 animate-fade-in-up stagger-4">
+<h2 class="font-title-md text-title-md text-on-surface mb-4">Current Streaks</h2>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container animate-pulse-glow">local_fire_department</span>
+<span class="font-body-md text-body-md text-on-surface">Meditation</span>
+</div>
+<span class="font-label-sm text-label-sm font-bold text-on-surface-variant bg-surface-container px-2 py-1 rounded-md">12 days</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container animate-pulse-glow">local_fire_department</span>
+<span class="font-body-md text-body-md text-on-surface">Reading</span>
+</div>
+<span class="font-label-sm text-label-sm font-bold text-on-surface-variant bg-surface-container px-2 py-1 rounded-md">8 days</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container opacity-70">local_fire_department</span>
+<span class="font-body-md text-body-md text-on-surface">Gym</span>
+</div>
+<span class="font-label-sm text-label-sm font-bold text-on-surface-variant bg-surface-container px-2 py-1 rounded-md">4 days</span>
+</div>
+</div>
+</section>
+<!-- Gratitude Card -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding shadow-ambient card-hover animate-fade-in-up stagger-4" style="animation-delay: 0.5s;">
+<h2 class="font-title-md text-title-md text-on-surface mb-2">Gratitude</h2>
+<div class="relative">
+<textarea class="w-full bg-transparent border border-outline/40 rounded-lg p-3 font-body-md text-body-md text-on-surface placeholder-outline focus:border-primary-container focus:ring-0 resize-none h-24 transition-colors" placeholder="One thing I'm thankful for today..."></textarea>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Bottom Navigation Shell (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-base bg-primary-container shadow-ambient animate-fade-in-up" style="animation-delay: 0.6s;">
+<!-- Active Tab -->
+<a class="flex flex-col items-center justify-center text-secondary-container font-bold scale-110 duration-200 ease-out p-2 w-16 btn-active" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-[10px] leading-tight">Home</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg w-16 btn-active" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">check_circle</span>
+<span class="font-label-sm text-[10px] leading-tight">Habits</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg w-16 btn-active" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">insights</span>
+<span class="font-label-sm text-[10px] leading-tight">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg w-16 btn-active" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">self_improvement</span>
+<span class="font-label-sm text-[10px] leading-tight">Calm</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors p-2 rounded-lg w-16 btn-active" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-[10px] leading-tight">Profile</span>
+</a>
+</nav>
+<script>
+    // Simple script to handle checkbox visual toggle for demo purposes
+    document.querySelectorAll('.checkbox-container').forEach(container => {
+        container.addEventListener('click', function() {
+            const icon = this.querySelector('.material-symbols-outlined');
+            if (this.classList.contains('checked')) {
+                icon.textContent = 'check_circle';
+                icon.style.fontVariationSettings = "'FILL' 1";
+            } else {
+                icon.textContent = 'radio_button_unchecked';
+                icon.style.fontVariationSettings = "'FILL' 0";
+            }
+        });
+    });
+</script>
+</body></html>

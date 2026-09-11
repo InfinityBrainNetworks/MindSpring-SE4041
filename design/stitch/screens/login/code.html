@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MindSpring - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "display-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F4F6F1; } /* Pale sage background */
+        
+        .custom-input:focus-within label {
+            transform: translateY(-50%) scale(0.85);
+            color: theme('colors.primary-container');
+        }
+        
+        .custom-input input:not(:placeholder-shown) + label {
+            transform: translateY(-50%) scale(0.85);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-screen_padding font-body-md text-on-background relative overflow-hidden">
+<!-- Decorative ambient blob -->
+<div class="fixed top-0 left-0 w-[120vw] h-[120vh] -translate-x-1/4 -translate-y-1/4 pointer-events-none opacity-30 z-0">
+<div class="absolute inset-0 bg-gradient-to-br from-surface-container-high/50 to-transparent rounded-full blur-3xl mix-blend-multiply"></div>
+</div>
+<!-- Login Container -->
+<main class="w-full max-w-[400px] z-10 flex flex-col items-center">
+<!-- Logo -->
+<div class="mb-stack_lg flex flex-col items-center">
+<img alt="MindSpring Logo" class="w-24 h-24 object-contain mb-stack_sm drop-shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWcrPXfmbNeipApGW_CS7D6X8kjYbPtyzmG5hoQDoP-12nCXUCeCUtXbk-uyDZ96_jb8fWbcnw00LllFSD5PykmTcSWCRotldI0m2nwER9-2Sn-3F5t6yQ8gSXZtmXNzZzkd54iRfLf01pOzRChHS7SnGNAgpuI4uhapuWCczS1qwLDyAz0fadW60YqVCj4Bc6__nf-aJp-aaJCh9nL-BFOZJKXuxd49QQprS4EwIFto9d-XZhaI1P"/>
+<h1 class="font-display-lg text-display-lg text-primary-container">MindSpring</h1>
+</div>
+<!-- Card -->
+<div class="w-full bg-surface-container-lowest rounded-[20px] p-card_padding shadow-[0_4px_20px_rgba(27,36,34,0.06)] flex flex-col gap-stack_md">
+<h2 class="font-title-md text-title-md text-on-surface text-center mb-stack_sm">Welcome Back</h2>
+<!-- Form -->
+<form class="flex flex-col gap-stack_md">
+<!-- Email Input -->
+<div class="relative custom-input">
+<input class="block w-full px-4 py-3 rounded-lg border border-outline/40 bg-transparent text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-colors peer font-body-md text-body-md" id="email" placeholder=" " type="email"/>
+<label class="absolute left-4 top-3 text-outline-variant transition-all duration-200 pointer-events-none origin-[0_0] font-body-md text-body-md peer-focus:-translate-y-5 peer-focus:scale-85 peer-focus:text-primary-container peer-focus:bg-surface-container-lowest peer-focus:px-1 peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:scale-85 peer-[:not(:placeholder-shown)]:bg-surface-container-lowest peer-[:not(:placeholder-shown)]:px-1 z-10" for="email">Email</label>
+</div>
+<!-- Password Input -->
+<div class="relative custom-input">
+<input class="block w-full px-4 py-3 rounded-lg border border-outline/40 bg-transparent text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-colors peer font-body-md text-body-md" id="password" placeholder=" " type="password"/>
+<label class="absolute left-4 top-3 text-outline-variant transition-all duration-200 pointer-events-none origin-[0_0] font-body-md text-body-md peer-focus:-translate-y-5 peer-focus:scale-85 peer-focus:text-primary-container peer-focus:bg-surface-container-lowest peer-focus:px-1 peer-[:not(:placeholder-shown)]:-translate-y-5 peer-[:not(:placeholder-shown)]:scale-85 peer-[:not(:placeholder-shown)]:bg-surface-container-lowest peer-[:not(:placeholder-shown)]:px-1 z-10" for="password">Password</label>
+</div>
+<!-- Forgot Password Link -->
+<div class="flex justify-end mt-1">
+<a class="font-label-sm text-label-sm text-primary-container hover:text-primary transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- Login Button -->
+<button class="w-full mt-stack_sm py-3 px-6 rounded-full bg-secondary-container text-on-secondary-fixed-variant font-title-md text-title-md hover:bg-secondary-fixed-dim transition-colors shadow-sm active:scale-[0.98] duration-200" type="submit">
+                    Log In
+                </button>
+</form>
+</div>
+<!-- Create Account Link -->
+<div class="mt-stack_lg">
+<span class="font-body-md text-body-md text-on-surface-variant">New here?</span>
+<a class="font-body-md text-body-md font-semibold text-primary-container hover:text-primary transition-colors ml-1" href="#">Create account</a>
+</div>
+</main>
+<script>
+        // Simple micro-interaction for the card to feel slightly tactile on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const card = document.querySelector('.bg-surface-container-lowest');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body></html>

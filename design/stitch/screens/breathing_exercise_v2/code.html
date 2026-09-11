@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Breathing Exercise - MindSpring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#141d1b",
+                        "surface": "#f2fcf8",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#e9f3ef",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#dbe5e1",
+                        "on-tertiary-fixed-variant": "#444844",
+                        "surface-dim": "#d2dcd9",
+                        "secondary-container": "#feb64e",
+                        "inverse-surface": "#293230",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e0eae7",
+                        "tertiary-container": "#464946",
+                        "on-surface-variant": "#404947",
+                        "error": "#ba1a1a",
+                        "tertiary": "#2f3330",
+                        "on-background": "#141d1b",
+                        "outline-variant": "#bfc8c6",
+                        "on-tertiary-container": "#b5b8b3",
+                        "on-tertiary-fixed": "#191c1a",
+                        "outline": "#707977",
+                        "primary-fixed": "#b2eee7",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#97d1ca",
+                        "secondary-fixed-dim": "#ffb956",
+                        "on-secondary-container": "#714800",
+                        "on-primary-fixed-variant": "#0d4f4a",
+                        "surface-container": "#e6f0ec",
+                        "on-primary-fixed": "#00201d",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f2fcf8",
+                        "secondary-fixed": "#ffddb5",
+                        "primary": "#003935",
+                        "tertiary-fixed-dim": "#c5c7c3",
+                        "tertiary-fixed": "#e1e3de",
+                        "primary-fixed-dim": "#97d1ca",
+                        "surface-variant": "#dbe5e1",
+                        "primary-container": "#10514c",
+                        "on-secondary-fixed": "#2a1800",
+                        "background": "#f2fcf8",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "surface-tint": "#2d6862",
+                        "surface-container-low": "#ecf6f2",
+                        "on-primary-container": "#88c2bb",
+                        "secondary": "#835400"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "stack_md": "16px",
+                        "stack_lg": "32px",
+                        "gutter": "16px",
+                        "base": "8px",
+                        "stack_sm": "8px",
+                        "card_padding": "20px",
+                        "screen_padding": "24px"
+                    },
+                    fontFamily: {
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "title-md": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "body-md": ["15px", { lineHeight: "22px", fontWeight: "400" }],
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "display-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "title-md": ["20px", { lineHeight: "28px", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .breathing-circle {
+            /* 4-7-8 rhythm: Total cycle 19s */
+            animation: breathe-478 19s ease-in-out infinite;
+        }
+        
+        .pulse-ring-1 { animation: pulse-teal 19s ease-in-out infinite 0.2s; }
+        .pulse-ring-2 { animation: pulse-teal 19s ease-in-out infinite 0.4s; }
+        .pulse-ring-3 { animation: pulse-teal 19s ease-in-out infinite 0.6s; }
+
+        @keyframes breathe-478 {
+            0% { transform: scale(1); opacity: 0.8; }
+            /* Inhale for 4s */
+            21.05% { transform: scale(1.6); opacity: 1; } 
+            /* Hold for 7s */
+            57.89% { transform: scale(1.6); opacity: 1; }
+            /* Exhale for 8s */
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        @keyframes pulse-teal {
+            0% { transform: scale(1); opacity: 0.1; box-shadow: 0 0 0 rgba(151, 209, 202, 0); }
+            21.05% { transform: scale(1.6); opacity: 0.4; box-shadow: 0 0 20px rgba(151, 209, 202, 0.4); }
+            57.89% { transform: scale(1.6); opacity: 0.4; box-shadow: 0 0 20px rgba(151, 209, 202, 0.4); }
+            100% { transform: scale(1); opacity: 0.1; box-shadow: 0 0 0 rgba(151, 209, 202, 0); }
+        }
+
+        .text-drift {
+            animation: drift 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(-3px); }
+            100% { transform: translateY(3px); }
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+        
+        .progress-circle-fill {
+            stroke-dasharray: 880; /* Approx circumference for r=140 */
+            stroke-dashoffset: 880;
+            animation: progress 45s linear forwards; /* Matches the 0:45 timer conceptually */
+        }
+
+        @keyframes progress {
+            to { stroke-dashoffset: 0; }
+        }
+
+        #glcanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -10;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="h-full bg-primary-container font-body-md text-inverse-on-surface flex flex-col items-center justify-between p-screen_padding overflow-hidden relative">
+<!-- Shader Background -->
+<canvas id="glcanvas"></canvas>
+<!-- Top Navigation / Dismiss -->
+<header class="w-full flex justify-between items-center z-10 py-base">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest/10 hover:bg-surface-container-lowest/20 transition-colors backdrop-blur-sm">
+<span class="material-symbols-outlined text-inverse-on-surface" data-icon="close">close</span>
+</button>
+<div class="flex gap-2">
+<!-- Chips for duration -->
+<button class="px-4 py-2 rounded-full border border-inverse-on-surface/30 text-inverse-on-surface font-label-sm text-label-sm hover:bg-surface-container-lowest/10 transition-colors">1 min</button>
+<button class="px-4 py-2 rounded-full bg-surface-container-lowest/20 text-inverse-on-surface font-label-sm text-label-sm border border-transparent backdrop-blur-sm">3 min</button>
+<button class="px-4 py-2 rounded-full border border-inverse-on-surface/30 text-inverse-on-surface font-label-sm text-label-sm hover:bg-surface-container-lowest/10 transition-colors">5 min</button>
+</div>
+</header>
+<!-- Central Breathing Animation Area -->
+<main class="flex-1 flex flex-col items-center justify-center w-full z-10 relative">
+<div class="text-drift">
+<h1 class="font-display-lg text-display-lg text-inverse-on-surface mb-stack_lg z-20 text-center tracking-wide" id="instruction-text">Breathe in</h1>
+</div>
+<!-- Concentric Circles Animation -->
+<div class="relative w-80 h-80 flex items-center justify-center my-stack_lg">
+<!-- Dynamic Progress Ring -->
+<svg class="absolute inset-0 w-full h-full progress-ring pointer-events-none" viewbox="0 0 300 300">
+<circle cx="150" cy="150" fill="none" r="140" stroke="rgba(255,255,255,0.1)" stroke-width="2"></circle>
+<circle class="progress-circle-fill" cx="150" cy="150" fill="none" r="140" stroke="#97d1ca" stroke-linecap="round" stroke-width="4"></circle>
+</svg>
+<!-- Outer rings -->
+<div class="absolute w-64 h-64 rounded-full border border-inverse-primary/30 pulse-ring-3"></div>
+<div class="absolute w-48 h-48 rounded-full border border-inverse-primary/50 pulse-ring-2"></div>
+<div class="absolute w-32 h-32 rounded-full border border-inverse-primary/70 pulse-ring-1"></div>
+<!-- Central solid circle -->
+<div class="w-20 h-20 rounded-full bg-inverse-primary breathing-circle shadow-[0_0_40px_rgba(151,209,202,0.5)] flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container opacity-80" data-icon="self_improvement">self_improvement</span>
+</div>
+</div>
+<div class="font-title-md text-title-md text-inverse-on-surface mt-stack_lg z-20" id="countdown-timer">
+            0:45
+        </div>
+</main>
+<!-- Bottom Action -->
+<footer class="w-full flex justify-center z-10 pb-stack_md">
+<button class="px-8 py-3 rounded-full border border-inverse-on-surface/40 text-inverse-on-surface font-title-md text-title-md hover:bg-inverse-on-surface/20 active:scale-95 transition-all duration-200">
+            End session
+        </button>
+</footer>
+<!-- Background Fallback Gradient -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#062624] via-[#041a18] to-[#02100f] -z-20"></div>
+<script>
+        // WebGL Background Shader Setup
+        const canvas = document.getElementById("glcanvas");
+        const gl = canvas.getContext("webgl");
+
+        if (gl) {
+            const vertexShaderSource = `
+                attribute vec2 a_position;
+                varying vec2 v_texCoord;
+                void main() {
+                    gl_Position = vec4(a_position, 0.0, 1.0);
+                    v_texCoord = a_position * 0.5 + 0.5;
+                }
+            `;
+
+            // Darker, more immersive version of the requested shader
+            const fragmentShaderSource = `
+                precision highp float;
+                varying vec2 v_texCoord;
+                uniform float u_time;
+                uniform vec2 u_resolution;
+
+                void main() {
+                    vec2 uv = v_texCoord;
+                    
+                    // Darker color shift (deepest teal)
+                    vec3 color1 = vec3(0.01, 0.12, 0.11); // Very Dark Teal
+                    vec3 color2 = vec3(0.04, 0.22, 0.20); // Darker Teal
+                    
+                    float noise = sin(uv.x * 3.0 + u_time * 0.5) * cos(uv.y * 3.0 + u_time * 0.4);
+                    noise += sin(uv.x * 5.0 - u_time * 0.3) * cos(uv.y * 2.0 + u_time * 0.2);
+                    
+                    float mixFactor = clamp(noise * 0.5 + 0.5, 0.0, 1.0);
+                    vec3 color = mix(color1, color2, mixFactor * 0.5 + 0.1); 
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `;
+
+            function createShader(gl, type, source) {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            }
+
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+            const program = gl.createProgram();
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            const positions = new Float32Array([
+                -1.0, -1.0,
+                 1.0, -1.0,
+                -1.0,  1.0,
+                -1.0,  1.0,
+                 1.0, -1.0,
+                 1.0,  1.0,
+            ]);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+            const positionLocation = gl.getAttribLocation(program, "a_position");
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+            const timeLocation = gl.getUniformLocation(program, "u_time");
+            const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+
+            function render(time) {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+                gl.viewport(0, 0, canvas.width, canvas.height);
+
+                gl.uniform1f(timeLocation, time * 0.001);
+                gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
+
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        }
+
+        // 4-7-8 Breathing Logic
+        // 4s Inhale, 7s Hold, 8s Exhale -> 19s total
+        const instructions = [
+            { text: "Breathe in...", duration: 4000 },
+            { text: "Hold...", duration: 7000 },
+            { text: "Breathe out...", duration: 8000 }
+        ];
+        
+        let phaseIndex = 0;
+        const textElement = document.getElementById('instruction-text');
+        
+        function updateInstruction() {
+            textElement.style.opacity = 0;
+            setTimeout(() => {
+                textElement.innerText = instructions[phaseIndex].text;
+                textElement.style.opacity = 1;
+                
+                const nextDelay = instructions[phaseIndex].duration;
+                phaseIndex = (phaseIndex + 1) % 3;
+                setTimeout(updateInstruction, nextDelay);
+            }, 300);
+        }
+        
+        // Start sequence
+        setTimeout(updateInstruction, 4000);
+
+    </script>
+</body></html>

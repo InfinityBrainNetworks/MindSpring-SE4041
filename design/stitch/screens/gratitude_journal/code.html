@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gratitude Journal - MindSpring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#141d1b",
+                    "surface": "#f2fcf8",
+                    "on-secondary": "#ffffff",
+                    "inverse-on-surface": "#e9f3ef",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#dbe5e1",
+                    "on-tertiary-fixed-variant": "#444844",
+                    "surface-dim": "#d2dcd9",
+                    "secondary-container": "#feb64e",
+                    "inverse-surface": "#293230",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#e0eae7",
+                    "tertiary-container": "#464946",
+                    "on-surface-variant": "#404947",
+                    "error": "#ba1a1a",
+                    "tertiary": "#2f3330",
+                    "on-background": "#141d1b",
+                    "outline-variant": "#bfc8c6",
+                    "on-tertiary-container": "#b5b8b3",
+                    "on-tertiary-fixed": "#191c1a",
+                    "outline": "#707977",
+                    "primary-fixed": "#b2eee7",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#97d1ca",
+                    "secondary-fixed-dim": "#ffb956",
+                    "on-secondary-container": "#714800",
+                    "on-primary-fixed-variant": "#0d4f4a",
+                    "surface-container": "#e6f0ec",
+                    "on-primary-fixed": "#00201d",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#f2fcf8",
+                    "secondary-fixed": "#ffddb5",
+                    "primary": "#003935",
+                    "tertiary-fixed-dim": "#c5c7c3",
+                    "tertiary-fixed": "#e1e3de",
+                    "primary-fixed-dim": "#97d1ca",
+                    "surface-variant": "#dbe5e1",
+                    "primary-container": "#10514c",
+                    "on-secondary-fixed": "#2a1800",
+                    "background": "#f2fcf8",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "surface-tint": "#2d6862",
+                    "surface-container-low": "#ecf6f2",
+                    "on-primary-container": "#88c2bb",
+                    "secondary": "#835400"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack_md": "16px",
+                    "stack_lg": "32px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "stack_sm": "8px",
+                    "card_padding": "20px",
+                    "screen_padding": "24px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "title-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "15px",
+                            {
+                                    "lineHeight": "22px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .soft-shadow {
+            box-shadow: 0px 4px 20px rgba(27, 36, 34, 0.06);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#F4F6F1] text-on-background font-body-md antialiased pb-[80px]">
+<!-- Top App Bar (Hidden on desktop, simplified version of the requested bar as this is a specific screen) -->
+<header class="bg-primary-container text-on-primary-container flex justify-between items-center w-full px-screen_padding py-base docked full-width top-0 sticky z-40 transition-colors">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-primary/10 transition-colors scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md font-bold">Gratitude Journal</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Canvas -->
+<main class="px-screen_padding py-stack_lg max-w-4xl mx-auto space-y-stack_lg">
+<!-- Prompt Card -->
+<section class="bg-surface-container-lowest rounded-[20px] p-card_padding soft-shadow transition-transform active:scale-[0.98]">
+<h2 class="font-title-md text-title-md text-on-surface mb-stack_sm">Name one thing that went well today</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack_md">Take a moment to reflect on a positive aspect of your day, no matter how small.</p>
+<div class="relative mt-2 rounded-md shadow-sm">
+<textarea class="block w-full rounded-md border-0 py-3 px-4 text-on-surface ring-1 ring-inset ring-outline-variant placeholder:text-outline focus:ring-2 focus:ring-inset focus:ring-primary-container font-body-md text-body-md bg-transparent" placeholder="Today I am grateful for..." rows="4"></textarea>
+</div>
+<div class="mt-stack_md flex justify-end">
+<button class="bg-secondary-container text-on-secondary-container hover:bg-secondary-container/90 rounded-full px-6 py-2.5 font-label-sm text-label-sm font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-[0px_4px_12px_rgba(254,182,78,0.3)]">
+<span class="material-symbols-outlined text-sm" data-icon="save" data-weight="fill" style="font-variation-settings: 'FILL' 1;">save</span>
+                    Save Entry
+                </button>
+</div>
+</section>
+<!-- Past Entries List -->
+<section>
+<h3 class="font-title-md text-title-md text-on-surface mb-stack_md">Past Entries</h3>
+<div class="space-y-stack_md">
+<!-- Entry Card 1 -->
+<article class="bg-surface-container-lowest rounded-[20px] p-card_padding soft-shadow transition-transform hover:scale-[1.01] active:scale-[0.98] cursor-pointer flex flex-col gap-2">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="event">event</span>
+<time class="font-label-sm text-label-sm uppercase tracking-wider">OCT 24, 2023</time>
+</div>
+<p class="font-body-md text-body-md text-on-surface line-clamp-2">The morning walk with the dog was surprisingly peaceful. The autumn leaves were beautiful and it set a good tone for the day.</p>
+</article>
+<!-- Entry Card 2 -->
+<article class="bg-surface-container-lowest rounded-[20px] p-card_padding soft-shadow transition-transform hover:scale-[1.01] active:scale-[0.98] cursor-pointer flex flex-col gap-2">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="event">event</span>
+<time class="font-label-sm text-label-sm uppercase tracking-wider">OCT 23, 2023</time>
+</div>
+<p class="font-body-md text-body-md text-on-surface line-clamp-2">I managed to finish that big project at work. Feeling relieved and proud of the effort I put in over the last few weeks.</p>
+</article>
+<!-- Entry Card 3 -->
+<article class="bg-surface-container-lowest rounded-[20px] p-card_padding soft-shadow transition-transform hover:scale-[1.01] active:scale-[0.98] cursor-pointer flex flex-col gap-2 opacity-80">
+<div class="flex items-center gap-2 text-outline">
+<span class="material-symbols-outlined text-sm" data-icon="event">event</span>
+<time class="font-label-sm text-label-sm uppercase tracking-wider">OCT 22, 2023</time>
+</div>
+<p class="font-body-md text-body-md text-on-surface line-clamp-2">Had a really nice dinner with an old friend. It was great to catch up and just laugh about old times.</p>
+</article>
+</div>
+<div class="mt-stack_md text-center">
+<button class="text-primary-container font-label-sm text-label-sm font-semibold hover:bg-primary-container/10 px-4 py-2 rounded-full transition-colors">
+                    View Older Entries
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile Only per style rules for primary flow, but Gratitude Journal is a sub-feature. 
+         However, prompt explicitly says "Include Bottom Navigation with 'Calm' active." 
+         Following exact JSON mapping for Calm) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-base bg-primary-container dark:bg-primary-container docked full-width bottom-0 flat no shadows">
+<!-- Home (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</a>
+<!-- Habits (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="font-label-sm text-label-sm mt-1">Habits</span>
+</a>
+<!-- Insights (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-label-sm text-label-sm mt-1">Insights</span>
+</a>
+<!-- Calm (Active) -->
+<a class="flex flex-col items-center justify-center text-secondary-container dark:text-secondary-fixed font-bold hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-lg relative" href="#">
+<span class="material-symbols-outlined" data-icon="self_improvement" data-weight="fill" style="font-variation-settings: 'FILL' 1;">self_improvement</span>
+<span class="font-label-sm text-label-sm mt-1">Calm</span>
+<span class="absolute -top-1 w-12 h-1 bg-secondary-container rounded-b-full"></span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-primary-container opacity-70 hover:bg-primary/20 transition-colors scale-110 duration-200 ease-out p-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</a>
+</nav>
+<!-- Side Navigation (Desktop equivalent of BottomNav, visually hidden on mobile) -->
+<aside class="hidden md:flex flex-col w-64 fixed h-screen left-0 top-0 bg-surface-container-low border-r border-outline-variant/30 py-stack_lg px-gutter">
+<div class="mb-stack_lg px-4">
+<h1 class="font-display-lg text-display-lg font-bold text-primary-container">MindSpring</h1>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-title-md text-title-md">Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<span class="font-title-md text-title-md">Habits</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-title-md text-title-md">Insights</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-container/10 text-primary-container font-semibold transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="self_improvement" data-weight="fill" style="font-variation-settings: 'FILL' 1;">self_improvement</span>
+<span class="font-title-md text-title-md">Calm</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-title-md text-title-md">Profile</span>
+</a>
+</nav>
+</aside>
+</body></html>

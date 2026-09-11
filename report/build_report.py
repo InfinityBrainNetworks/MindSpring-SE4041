@@ -9,6 +9,7 @@ from docx.oxml import OxmlElement
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 BASE = os.path.dirname(os.path.abspath(__file__))
+DESIGN = os.path.join(os.path.dirname(BASE), "design")
 TEAL   = "10514C"
 AMBER  = "E8A33D"
 OFFWHT = "F4F6F1"
@@ -170,7 +171,7 @@ FIG = [0]
 
 
 def figure_row(items, width=2.55):
-    """items: list of (relative_path, caption). Renders up to 2 per row."""
+    """items: list of (path relative to design/, caption). Renders up to 2 per row."""
     for i in range(0, len(items), 2):
         chunk = items[i:i + 2]
         t = doc.add_table(rows=2, cols=len(chunk))
@@ -181,7 +182,7 @@ def figure_row(items, width=2.55):
             c = t.cell(0, j)
             c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
             c.paragraphs[0].add_run().add_picture(
-                os.path.join(BASE, path), width=Inches(width))
+                os.path.join(DESIGN, path), width=Inches(width))
             cc = t.cell(1, j).paragraphs[0]
             cc.alignment = WD_ALIGN_PARAGRAPH.CENTER
             r = cc.add_run("Figure %d: %s" % (FIG[0], cap))
@@ -229,7 +230,7 @@ doc.add_paragraph().paragraph_format.space_after = Pt(24)
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p.add_run().add_picture(
-    os.path.join(BASE, "Logo and Color Pallet", "Screenshot 2026-08-22 110530.png"),
+    os.path.join(DESIGN, "branding", "Logo.png"),
     width=Inches(3.0))
 
 P("MindSpring", style='Title', align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -486,7 +487,7 @@ for name, hexv, fg, fill, use in pal:
     r3.font.size = Pt(10)
 doc.add_paragraph().paragraph_format.space_after = Pt(6)
 
-figure_row([("Logo and Color Pallet/Screenshot 2026-08-22 110541.png",
+figure_row([("branding/Design System.png",
              "The MindSpring design system in Figma — colour styles with tonal ramps, the Plus Jakarta Sans "
              "type scale, and the shared button, input, navigation and icon components.")],
            width=6.3)
@@ -602,9 +603,9 @@ P("The first slide of onboarding leads with privacy rather than features, becaus
   "and Register screens use the same elevated white card on the off-white canvas, keeping the form visually "
   "self-contained. Register restates the privacy commitment at the point of consent — “All your data "
   "stays on this device” — placing the reassurance exactly where hesitation occurs.")
-figure_row([("Onboarding.png", "Onboarding — privacy-first value proposition with page indicator and Skip."),
-            ("Login.png", "Login — branded card layout with amber primary action and a clear route to registration."),
-            ("Register.png", "Register — account creation with an inline privacy note at the consent checkbox.")])
+figure_row([("screens/Onboarding.png", "Onboarding — privacy-first value proposition with page indicator and Skip."),
+            ("screens/Login.png", "Login — branded card layout with amber primary action and a clear route to registration."),
+            ("screens/Register.png", "Register — account creation with an inline privacy note at the consent checkbox.")])
 
 P("4.4 Home Dashboard", style='Heading 2')
 P("Home answers a single question: what does the user need to do today? A time-aware greeting personalises the "
@@ -616,9 +617,9 @@ P("Home answers a single question: what does the user need to do today? A time-a
 P("The dark variant adapts to context rather than merely recolouring: an Evening Reflection card carries a "
   "quotation and a “Wind down phase active” cue, and the streak count is promoted to its own tile. This "
   "demonstrates that the design system supports contextual variation without breaking its own rules.")
-figure_row([("Home Dashboard.png",
+figure_row([("screens/Home Dashboard.png",
              "Home Dashboard (light) — greeting, mood prompt, today's habits with progress, and streaks."),
-            ("Home Dashboard (Dark).png",
+            ("screens/Home Dashboard (Dark).png",
              "Home Dashboard (dark) — evening reflection, streak tile and habit checklist on a near-black canvas.")])
 
 P("4.5 Habit Tracking", style='Heading 2')
@@ -634,13 +635,13 @@ P("Add Habit breaks configuration into labelled groups — name, category, icon,
   "total days and a thirty-day activity heatmap, giving both an immediate emotional signal and the underlying "
   "evidence. The Habit Completed screen is the app's one moment of celebration: a full-screen checkmark, "
   "sparkle motifs and a personalised message that credits consistency rather than perfection.")
-figure_row([("Habits List.png",
+figure_row([("screens/Habits List.png",
              "Habits List — weekly dot progress, one-tap completion and a floating add action."),
-            ("Add Habit.png",
+            ("screens/Add Habit.png",
              "Add Habit — grouped configuration: name, category, icon, weekday frequency and reminder."),
-            ("Habit Detail.png",
+            ("screens/Habit Detail.png",
              "Habit Detail — streak hero card with completion rate, personal best, total days and activity heatmap."),
-            ("Habit Completed!.png",
+            ("screens/Habit Completed!.png",
              "Habit Completed — positive reinforcement with a personalised, non-competitive message.")])
 
 P("4.6 Mood Logging and History", style='Heading 2')
@@ -654,9 +655,9 @@ P("Mood History presents entries as a reverse-chronological card list filtered b
   "card shows a coloured mood dot, a label, a timestamp, the selected feeling tags and an excerpt of the note. "
   "Swiping a card left reveals a red delete action — the only use of red in the entire product, reserved "
   "exclusively for destructive operations, which keeps its meaning unambiguous.")
-figure_row([("Mood Check-in.png",
+figure_row([("screens/Mood Check-in.png",
              "Mood Check-in — face scale, multi-select feeling chips and an optional note."),
-            ("Mood History.png",
+            ("screens/Mood History.png",
              "Mood History — filterable entry list with swipe-to-delete revealed on the third card.")])
 
 P("4.7 The Calm Section", style='Heading 2')
@@ -671,11 +672,11 @@ P("The Gratitude Journal replaces the intimidating blank page with a single spec
   "thing that went well today.” The placeholder text continues the sentence for the user, and past entries "
   "appear immediately below with dates and excerpts, so the screen doubles as evidence of accumulated positive "
   "reflection.")
-figure_row([("Breathing Exercise.png",
+figure_row([("screens/Breathing Exercise.png",
              "Breathing Exercise (light) — immersive gradient, expanding orb, phase instruction and countdown."),
-            ("Breathing Exercise (Dark).png",
+            ("screens/Breathing Exercise (Dark).png",
              "Breathing Exercise (dark) — Box Breathing 4-4-4-4 with restart, pause and settings controls."),
-            ("Gratitude Journal.png",
+            ("screens/Gratitude Journal.png",
              "Gratitude Journal — a specific prompt, a guided placeholder and a list of past entries.")])
 
 P("4.8 Insights", style='Heading 2')
@@ -690,9 +691,9 @@ P("The dark variant demonstrates an alternative summary layout: current streak a
   "amber. In both variants the numeric value is always accompanied by a short interpretation — “Based "
   "on last 7 days”, “Keep it up! You're on a roll” — so the user is never left to infer whether "
   "a figure is good.")
-figure_row([("Insights.png",
+figure_row([("screens/Insights.png",
              "Insights (light) — key insight card, mood trend line and habit completion rates with a period filter."),
-            ("Insights (Dark).png",
+            ("screens/Insights (Dark).png",
              "Insights (dark) — summary statistics and a weekly activity chart highlighting the current day in amber.")])
 
 P("4.9 Profile and Settings", style='Heading 2')
@@ -703,7 +704,7 @@ P("Profile groups personalisation and data control into a single scannable list,
   "Clear All Data is the one destructive control in settings and is therefore separated into its own card and "
   "rendered in red, deliberately breaking the palette so it cannot be tapped by habit. The non-medical "
   "disclaimer sits permanently at the foot of the screen.")
-figure_row([("Settings/Profile.png",
+figure_row([("screens/Profile.png",
              "Profile and Settings — personalisation, dark-mode switch, data export, an isolated destructive "
              "action, and the non-medical disclaimer.")],
            width=2.55)

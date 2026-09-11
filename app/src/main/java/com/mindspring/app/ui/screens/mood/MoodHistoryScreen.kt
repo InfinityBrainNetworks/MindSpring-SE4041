@@ -65,7 +65,7 @@ fun MoodHistoryScreen(onBack: () -> Unit, onEdit: (Long) -> Unit) {
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
 
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         TealTopBar("Mood History", onNavigate = onBack)
         LazyColumn(
             contentPadding = PaddingValues(Dimens.screen),

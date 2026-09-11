@@ -20,6 +20,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mindspring.app.ui.theme.MsTheme
@@ -128,15 +130,31 @@ fun ActivityBars(
                 )
             }
         }
-        Row(Modifier.fillMaxWidth()) {
-            labels.forEachIndexed { i, label ->
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (i == highlightIndex) c.amber else c.textTertiary,
-                    modifier = Modifier.weight(1f),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                )
+        if (values.size <= 12) {
+            Row(Modifier.fillMaxWidth()) {
+                labels.forEachIndexed { i, label ->
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (i == highlightIndex) c.amber else c.textTertiary,
+                        modifier = Modifier.weight(1f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                }
+            }
+        } else {
+            // A month of bars leaves each slot too narrow for a label, so the few labels given
+            // are drawn centred under their bar, free to spill into the empty slots beside it.
+            val measurer = rememberTextMeasurer()
+            val style = MaterialTheme.typography.labelSmall
+            Canvas(Modifier.fillMaxWidth().height(18.dp)) {
+                val slot = size.width / values.size
+                labels.forEachIndexed { i, label ->
+                    if (label.isEmpty()) return@forEachIndexed
+                    val layout = measurer.measure(label, style.copy(color = if (i == highlightIndex) c.amber else c.textTertiary))
+                    val x = (slot * i + slot / 2 - layout.size.width / 2f).coerceIn(0f, size.width - layout.size.width)
+                    drawText(layout, topLeft = Offset(x, 2.dp.toPx()))
+                }
             }
         }
     }

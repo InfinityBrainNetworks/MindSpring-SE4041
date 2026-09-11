@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
@@ -36,9 +37,16 @@ private val MsShapes = Shapes(
 
 private val LocalMsColors = staticCompositionLocalOf { LightMsColors }
 
+/** Whether decorative motion (the drifting background, idle pulses) runs. Off in tests and when the user turns it off. */
+val LocalAmbientMotion = staticCompositionLocalOf { true }
+
 object MsTheme {
     val colors: MsColors
         @Composable @ReadOnlyComposable get() = LocalMsColors.current
+
+    /** The teal chrome: a gentle diagonal from deep to bright teal. */
+    val chrome: Brush
+        @Composable @ReadOnlyComposable get() = Brush.linearGradient(listOf(TealDeep, Teal, TealBright))
 }
 
 private fun MsColors.toMaterial() = if (isDark) {
@@ -47,10 +55,10 @@ private fun MsColors.toMaterial() = if (isDark) {
         primaryContainer = teal, onPrimaryContainer = onTeal,
         secondary = amber, onSecondary = onAmber,
         background = canvas, onBackground = textPrimary,
-        surface = canvas, onSurface = textPrimary,
+        surface = Color(0xFF1E2826), onSurface = textPrimary,
         surfaceVariant = cardMuted, onSurfaceVariant = textSecondary,
-        surfaceContainerLowest = card, surfaceContainerLow = cardSubtle,
-        surfaceContainer = card, surfaceContainerHigh = card, surfaceContainerHighest = cardMuted,
+        surfaceContainerLowest = Color(0xFF1E2826), surfaceContainerLow = cardSubtle,
+        surfaceContainer = Color(0xFF26312E), surfaceContainerHigh = Color(0xFF26312E), surfaceContainerHighest = cardMuted,
         outline = textTertiary, outlineVariant = divider,
         error = danger, onError = Color(0xFF690005),
     )
@@ -60,10 +68,10 @@ private fun MsColors.toMaterial() = if (isDark) {
         primaryContainer = Color(0xFFB2EEE7), onPrimaryContainer = Color(0xFF00201D),
         secondary = amber, onSecondary = onAmber,
         background = canvas, onBackground = textPrimary,
-        surface = canvas, onSurface = textPrimary,
+        surface = Color.White, onSurface = textPrimary,
         surfaceVariant = cardMuted, onSurfaceVariant = textSecondary,
-        surfaceContainerLowest = card, surfaceContainerLow = cardSubtle,
-        surfaceContainer = card, surfaceContainerHigh = card, surfaceContainerHighest = cardMuted,
+        surfaceContainerLowest = Color.White, surfaceContainerLow = cardSubtle,
+        surfaceContainer = Color.White, surfaceContainerHigh = Color(0xFFF7F9F6), surfaceContainerHighest = cardMuted,
         outline = textTertiary, outlineVariant = Color(0xFFBFC8C6),
         error = danger, onError = Color.White,
     )
@@ -72,10 +80,11 @@ private fun MsColors.toMaterial() = if (isDark) {
 @Composable
 fun MindSpringTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    ambientMotion: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) DarkMsColors else LightMsColors
-    CompositionLocalProvider(LocalMsColors provides colors) {
+    CompositionLocalProvider(LocalMsColors provides colors, LocalAmbientMotion provides ambientMotion) {
         MaterialTheme(
             colorScheme = colors.toMaterial(),
             typography = MsTypography,

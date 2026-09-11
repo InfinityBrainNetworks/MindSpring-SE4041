@@ -37,7 +37,7 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
     fun onConfirm(v: String) = _state.update { it.copy(confirm = v, error = null) }
     fun onAgreed(v: Boolean) = _state.update { it.copy(agreed = v, error = null) }
 
-    fun fillDemo() = _state.update { it.copy(email = "asan@mindspring.app", password = "mindspring", error = null) }
+    fun demo() = submit { auth.loginDemo() }
 
     fun login() {
         val s = _state.value

@@ -16,8 +16,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
+import androidx.compose.material.icons.automirrored.rounded.DirectionsWalk
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Bed
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.Groups
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.WbTwilight
+import androidx.compose.material.icons.rounded.WorkOutline
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.LocalFlorist
 import androidx.compose.material.icons.rounded.Restaurant
@@ -94,6 +102,14 @@ val HabitIcon.vector: ImageVector
         HabitIcon.Flower -> Icons.Rounded.LocalFlorist
         HabitIcon.Food -> Icons.Rounded.Restaurant
         HabitIcon.School -> Icons.Rounded.School
+        HabitIcon.Work -> Icons.Rounded.WorkOutline
+        HabitIcon.Code -> Icons.Rounded.Code
+        HabitIcon.Money -> Icons.Rounded.Savings
+        HabitIcon.Home -> Icons.Rounded.Home
+        HabitIcon.People -> Icons.Rounded.Groups
+        HabitIcon.Pray -> Icons.Rounded.WbTwilight
+        HabitIcon.Walk -> Icons.AutoMirrored.Rounded.DirectionsWalk
+        HabitIcon.Write -> Icons.Rounded.EditNote
     }
 
 /**

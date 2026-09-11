@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,14 +50,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.data.model.MarkState
 import com.mindspring.app.ui.appViewModel
+import com.mindspring.app.ui.components.AnimatedCount
+import com.mindspring.app.ui.components.FrequencyPill
+import com.mindspring.app.ui.components.GhostButton
 import com.mindspring.app.ui.components.MsCard
 import com.mindspring.app.ui.components.MsProgressBar
 import com.mindspring.app.ui.components.OutlinePillButton
+import com.mindspring.app.ui.components.Pill
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.TealTopBar
+import com.mindspring.app.ui.components.Tint
+import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
+import com.mindspring.app.ui.theme.areaColor
+import com.mindspring.app.ui.util.Fmt
 import java.time.DayOfWeek
 import kotlin.math.roundToInt
 
@@ -66,12 +77,12 @@ fun HabitDetailScreen(
     onEdit: () -> Unit,
     onCompleted: () -> Unit,
 ) {
-    val vm = appViewModel { HabitDetailViewModel(it.habits, habitId) }
+    val vm = appViewModel { HabitDetailViewModel(it, habitId) }
     val state by vm.state.collectAsStateWithLifecycle()
     val c = MsTheme.colors
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         TealTopBar(title = state?.habit?.name ?: "", onNavigate = onBack)
         val s = state ?: return@Column
         Column(
@@ -79,55 +90,74 @@ fun HabitDetailScreen(
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(horizontal = Dimens.screen, vertical = Dimens.stackLg),
+                .padding(horizontal = Dimens.screen, vertical = Dimens.stackLg - 8.dp),
             verticalArrangement = Arrangement.spacedBy(Dimens.stackMd),
         ) {
-            StreakHero(s)
+            StreakHero(s, Modifier.appear(0))
 
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Dimens.gutter)) {
-                StatTile("Completion", Icons.Rounded.DonutLarge, c.tealInk, Modifier.weight(1f).fillMaxHeight()) {
-                    Text("${(s.monthRate * 100).roundToInt()}%", style = MaterialTheme.typography.headlineMedium, color = c.tealInk, fontWeight = FontWeight.Bold)
-                    Text("This month", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).appear(1), horizontalArrangement = Arrangement.spacedBy(Dimens.gutter)) {
+                StatTile("This month", Icons.Rounded.DonutLarge, c.tealInk, Modifier.weight(1f).fillMaxHeight()) {
+                    AnimatedCount((s.month.rate * 100).roundToInt(), style = MaterialTheme.typography.headlineMedium, color = c.tealInk, suffix = "%", fontWeight = FontWeight.Bold)
+                    Text(
+                        if (s.month.possible == 0) "Nothing due yet" else "${s.month.done} of ${s.month.possible} ${s.unit.plural}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = c.textTertiary,
+                    )
                     Spacer(Modifier.height(12.dp))
-                    MsProgressBar(s.monthRate)
+                    MsProgressBar(s.month.rate)
                 }
-                StatTile("Best Streak", Icons.Rounded.EmojiEvents, c.amber, Modifier.weight(1f).fillMaxHeight()) {
+                StatTile("Best streak", Icons.Rounded.EmojiEvents, c.amber, Modifier.weight(1f).fillMaxHeight()) {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Text("${s.bestStreak}", style = MaterialTheme.typography.headlineMedium, color = c.textPrimary, fontWeight = FontWeight.Bold)
+                        AnimatedCount(s.bestStreak, style = MaterialTheme.typography.headlineMedium, color = c.textPrimary, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.width(6.dp))
-                        Text("days", style = MaterialTheme.typography.titleMedium, color = c.textTertiary, modifier = Modifier.padding(bottom = 4.dp))
+                        Text(if (s.bestStreak == 1) s.unit.singular else s.unit.plural, style = MaterialTheme.typography.titleMedium, color = c.textTertiary, modifier = Modifier.padding(bottom = 4.dp))
                     }
                     Text("Personal record", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
                 }
             }
-            StatTile("Total Days", Icons.Rounded.CalendarMonth, c.tealInk, Modifier.fillMaxWidth()) {
-                Text("${s.totalDays}", style = MaterialTheme.typography.headlineMedium, color = c.textPrimary, fontWeight = FontWeight.Bold)
-                Text("Completed since you started", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
+            StatTile("Total", Icons.Rounded.CalendarMonth, c.tealInk, Modifier.fillMaxWidth().appear(2)) {
+                AnimatedCount(s.totalDone, style = MaterialTheme.typography.headlineMedium, color = c.textPrimary, fontWeight = FontWeight.Bold)
+                Text("Times done since ${Fmt.dayMonth(s.habit.createdAt)}", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
             }
 
-            ActivityCard(s)
+            ActivityCard(s, Modifier.appear(3))
 
             Spacer(Modifier.height(Dimens.stackSm))
-            if (s.doneToday) {
-                OutlinePillButton(
-                    "Completed today · tap to undo",
-                    leadingIcon = Icons.Rounded.CheckCircle,
-                    onClick = { vm.setDoneToday(false) },
-                    contentColor = c.tealInk,
-                    borderColor = c.tealInk.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                )
-            } else {
-                PrimaryButton(
-                    "Complete for Today",
-                    leadingIcon = Icons.Rounded.CheckCircle,
-                    onClick = { vm.setDoneToday(true); onCompleted() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            if (s.habit.active && s.belongsToday) {
+                when (s.todayMark) {
+                    MarkState.Done -> OutlinePillButton(
+                        "Completed today · tap to undo",
+                        leadingIcon = Icons.Rounded.CheckCircle,
+                        onClick = { vm.setToday(null) },
+                        contentColor = c.tealInk,
+                        borderColor = c.tealInk.copy(alpha = 0.5f),
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                    )
+                    MarkState.Skipped -> OutlinePillButton(
+                        "Skipped today · tap to undo",
+                        onClick = { vm.setToday(null) },
+                        contentColor = c.textSecondary,
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                    )
+                    null -> {
+                        PrimaryButton(
+                            "Complete for Today",
+                            leadingIcon = Icons.Rounded.CheckCircle,
+                            onClick = { vm.setToday(MarkState.Done); onCompleted() },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        GhostButton(
+                            "Skip today (doesn't count against you)",
+                            onClick = { vm.setToday(MarkState.Skipped) },
+                            color = c.textSecondary,
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        )
+                    }
+                }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Dimens.gutter)) {
                 OutlinePillButton(
-                    "Edit Habit",
+                    "Edit",
                     leadingIcon = Icons.Rounded.Edit,
                     onClick = onEdit,
                     containerColor = c.cardMuted,
@@ -143,6 +173,12 @@ fun HabitDetailScreen(
                     modifier = Modifier.weight(1f),
                 )
             }
+            GhostButton(
+                if (s.habit.active) "Retire this habit (keeps its history)" else "Bring this habit back",
+                onClick = { vm.setActive(!s.habit.active) },
+                color = c.tealInk,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
             Spacer(Modifier.height(Dimens.stackMd))
         }
     }
@@ -151,65 +187,56 @@ fun HabitDetailScreen(
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete this habit?") },
-            text = { Text("This removes the habit and its whole completion history. This can't be undone.") },
+            text = { Text("This removes the habit and its whole history. To stop tracking it but keep the history, retire it instead.") },
             confirmButton = {
-                TextButton(onClick = { confirmDelete = false; vm.delete(onBack) }) {
-                    Text("Delete", color = c.danger)
-                }
+                TextButton(onClick = { confirmDelete = false; vm.delete(onBack) }) { Text("Delete", color = c.danger) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun StreakHero(s: HabitDetailState) {
+private fun StreakHero(s: HabitDetailState, modifier: Modifier) {
     val c = MsTheme.colors
-    MsCard(Modifier.fillMaxWidth(), color = c.hero, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(s.habit.name, style = MaterialTheme.typography.headlineMedium, color = c.onTeal.copy(alpha = 0.85f), textAlign = TextAlign.Center)
+    MsCard(modifier.fillMaxWidth(), color = c.hero, horizontalAlignment = Alignment.CenterHorizontally) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FrequencyPill(s.habit.frequency)
+            s.area?.let { Pill(it.name, Tint(areaColor(it.colorIndex).copy(alpha = 0.3f), Color.White)) }
+            if (s.habit.subArea.isNotBlank()) Pill(s.habit.subArea, Tint(Color.White.copy(alpha = 0.12f), c.onTeal))
+            if (s.habit.target.isNotBlank()) Pill(s.habit.target, Tint(Color.White.copy(alpha = 0.12f), c.onTeal))
+            if (!s.habit.active) Pill("Retired", Tint(Color.White.copy(alpha = 0.2f), c.onTeal))
+        }
         Spacer(Modifier.height(Dimens.stackMd))
         Box(
-            Modifier
-                .size(96.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.08f))
-                .border(4.dp, c.amber.copy(alpha = 0.25f), CircleShape),
+            Modifier.size(96.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.08f)).border(4.dp, c.amber.copy(alpha = 0.25f), CircleShape),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                Icons.Rounded.LocalFireDepartment,
-                contentDescription = null,
-                tint = if (s.streak > 0) c.amber else c.onTealMuted,
-                modifier = Modifier.size(60.dp),
-            )
+            Icon(Icons.Rounded.LocalFireDepartment, contentDescription = null, tint = if (s.streak > 0) c.amber else c.onTealMuted, modifier = Modifier.size(60.dp))
         }
         Spacer(Modifier.height(Dimens.stackSm))
         Text(
-            if (s.streak == 1) "1 Day Streak" else "${s.streak} Day Streak",
+            "${s.streak} ${(if (s.streak == 1) s.unit.singular else s.unit.plural).replaceFirstChar { it.uppercase() }} Streak",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = c.amber,
         )
         Text(
             when {
-                s.streak == 0 -> "Complete today to start a streak"
-                s.streak >= s.bestStreak && s.streak > 1 -> "Your best run yet. Keep it burning!"
-                else -> "Keep it burning!"
+                s.streak == 0 -> "Complete it to start a streak"
+                s.streak >= s.bestStreak && s.streak > 1 -> "Your best run yet. Keep it going!"
+                else -> "Keep it going!"
             },
             style = MaterialTheme.typography.bodyMedium,
             color = c.onTealMuted,
+            textAlign = TextAlign.Center,
         )
     }
 }
 
 @Composable
-private fun StatTile(
-    label: String,
-    icon: ImageVector,
-    iconTint: Color,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
+private fun StatTile(label: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val c = MsTheme.colors
     MsCard(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -224,11 +251,11 @@ private fun StatTile(
 
 /** Last five weeks, Monday-first. Amber dots mark the days in the current streak. */
 @Composable
-private fun ActivityCard(s: HabitDetailState) {
+private fun ActivityCard(s: HabitDetailState, modifier: Modifier) {
     val c = MsTheme.colors
     // A missed day is a mid-tone, never red: missing a day is not a failure state.
-    val missedColor = c.tealInk.copy(alpha = if (c.isDark) 0.3f else 0.32f)
-    MsCard(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    val missedColor = c.tealInk.copy(alpha = 0.32f)
+    MsCard(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Activity", style = MaterialTheme.typography.titleLarge, color = c.textPrimary, modifier = Modifier.weight(1f))
             Text(
@@ -241,13 +268,7 @@ private fun ActivityCard(s: HabitDetailState) {
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             DayOfWeek.entries.forEach {
-                Text(
-                    it.name.take(1),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = c.textTertiary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f),
-                )
+                Text(it.name.take(1), style = MaterialTheme.typography.labelSmall, color = c.textTertiary, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
             }
         }
         s.grid.forEach { week ->
@@ -258,21 +279,24 @@ private fun ActivityCard(s: HabitDetailState) {
                     val styled = when (cell) {
                         DayCell.Done -> base.background(c.tealInk)
                         DayCell.Missed -> base.background(missedColor)
-                        DayCell.Rest -> base.background(c.cardSubtle)
+                        DayCell.Skipped -> base.background(c.cardMuted).border(1.dp, c.textTertiary.copy(alpha = 0.35f), shape)
+                        DayCell.Rest, DayCell.Open -> base.background(c.cardSubtle)
                         DayCell.Future -> base.border(1.dp, c.divider, shape)
                         DayCell.Before -> base
                     }
                     Box(styled, contentAlignment = Alignment.Center) {
                         if (date in s.streakDays) Box(Modifier.size(7.dp).clip(CircleShape).background(c.amber))
+                        if (cell == DayCell.Skipped) Text("–", style = MaterialTheme.typography.labelSmall, color = c.textSecondary)
                     }
                 }
             }
         }
         Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Legend(c.tealInk, "Done")
-            Legend(missedColor, "Missed")
-            Legend(c.cardSubtle, "Rest day")
+            if (s.habit.frequency.isDayBased) Legend(missedColor, "Missed")
+            Legend(c.cardMuted, "Skipped")
+            Legend(c.cardSubtle, if (s.habit.frequency.isDayBased) "Day off" else "Any day")
         }
     }
 }

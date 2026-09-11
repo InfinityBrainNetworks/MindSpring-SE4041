@@ -2,6 +2,7 @@ package com.mindspring.app.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -27,7 +28,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,7 +51,9 @@ import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.theme.NearBlack
 
 /**
- * Level-1 content card: 20dp radius and a soft ambient shadow (DESIGN.md "Elevation & Depth").
+ * Level-1 content card: 20dp radius, a frosted surface the ambient gradient glows through, and a
+ * bright hairline edge that lifts it off the canvas (DESIGN.md "Elevation & Depth"). A soft
+ * shadow drawn only outside the edge keeps depth without greying the translucent face.
  * Clickable cards scale to 98% while pressed, as the design system specifies.
  */
 @Composable
@@ -54,28 +66,47 @@ fun MsCard(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val c = MsTheme.colors
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.98f else 1f, label = "cardPress")
-    // Dark themes express elevation through surface lightness, not shadow.
-    val shadow = if (MsTheme.colors.isDark) Modifier else Modifier.shadow(
-        elevation = 10.dp,
-        shape = CardShape,
-        ambientColor = NearBlack.copy(alpha = 0.04f),
-        spotColor = NearBlack.copy(alpha = 0.10f),
-    )
+    val glass = color.alpha < 1f
     Column(
         modifier = modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .then(shadow)
+            .then(if (c.isDark) Modifier else Modifier.softShadow(CardShape))
             .clip(CardShape)
             .background(color)
+            .then(if (glass) Modifier.border(1.dp, c.cardBorder, CardShape) else Modifier)
             .then(if (onClick != null) Modifier.clickable(interaction, indication = null, onClick = onClick) else Modifier)
             .padding(contentPadding),
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
         content = content,
     )
+}
+
+/**
+ * A soft drop shadow painted only outside [shape], so translucent surfaces keep a clean face.
+ * (An elevation shadow would show through the frosted card and grey it.)
+ */
+fun Modifier.softShadow(
+    shape: Shape,
+    color: Color = NearBlack.copy(alpha = 0.10f),
+    blur: Dp = 22.dp,
+    offsetY: Dp = 8.dp,
+): Modifier = drawBehind {
+    val path = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@drawBehind)) }
+    clipPath(path, ClipOp.Difference) {
+        drawIntoCanvas { canvas ->
+            val paint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                this.color = android.graphics.Color.TRANSPARENT
+                setShadowLayer(blur.toPx(), 0f, offsetY.toPx(), color.toArgb())
+            }
+            canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
+        }
+    }
 }
 
 /** Tinted circular container for an icon, used for habit categories and settings rows. */

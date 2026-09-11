@@ -1,0 +1,212 @@
+package com.mindspring.app.ui.screens.tasks
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.data.model.Priority
+import com.mindspring.app.data.model.Repeat
+import com.mindspring.app.data.model.TaskStatus
+import com.mindspring.app.domain.TaskLogic
+import com.mindspring.app.ui.appViewModel
+import com.mindspring.app.ui.components.AreaChooser
+import com.mindspring.app.ui.components.BarIconButton
+import com.mindspring.app.ui.components.DateField
+import com.mindspring.app.ui.components.DotChip
+import com.mindspring.app.ui.components.FieldLabel
+import com.mindspring.app.ui.components.FlagPill
+import com.mindspring.app.ui.components.MsTextField
+import com.mindspring.app.ui.components.PrimaryButton
+import com.mindspring.app.ui.components.SegmentedTabs
+import com.mindspring.app.ui.components.SmallChip
+import com.mindspring.app.ui.components.SuggestionField
+import com.mindspring.app.ui.components.TealTopBar
+import com.mindspring.app.ui.theme.Dimens
+import com.mindspring.app.ui.theme.MsTheme
+import com.mindspring.app.ui.theme.areaColor
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
+    val vm = appViewModel { TaskEditorViewModel(it, taskId, projectId) }
+    val s by vm.state.collectAsStateWithLifecycle()
+    val areas by vm.areas.collectAsStateWithLifecycle()
+    val projects by vm.projects.collectAsStateWithLifecycle()
+    val subAreas by vm.subAreas.collectAsStateWithLifecycle()
+    val c = MsTheme.colors
+    var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    val today = LocalDate.now()
+
+    LaunchedEffect(s.saved) { if (s.saved) onDone() }
+
+    Column(Modifier.fillMaxSize()) {
+        TealTopBar(
+            title = if (s.isEditing) "Task ${s.toTask().code}" else "New Task",
+            navigationIcon = Icons.Rounded.Close,
+            onNavigate = onDone,
+            actions = { if (s.isEditing) BarIconButton(Icons.Rounded.DeleteOutline, "Delete task") { confirmDelete = true } },
+        )
+        Column(
+            Modifier
+                .weight(1f)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Dimens.screen, vertical = Dimens.stackLg - 8.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.stackLg - 8.dp),
+        ) {
+            Column {
+                FieldLabel("Task")
+                MsTextField(
+                    value = s.title,
+                    onValueChange = vm::onTitle,
+                    placeholder = "e.g. Submit the final APK",
+                    singleLine = false,
+                    isError = s.showErrors && s.titleError != null,
+                    errorText = s.titleError,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                if (s.isEditing) {
+                    Row(Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        FlagPill(TaskLogic.flag(s.toTask(), today))
+                        TaskLogic.window(s.toTask())?.let {
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (it == 1L) "Single-day task" else "$it-day window", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
+                        }
+                    }
+                }
+            }
+
+            Column {
+                FieldLabel("Deadline")
+                DateField(
+                    value = s.due,
+                    onChange = vm::onDue,
+                    emptyText = "No deadline",
+                    quick = listOf(
+                        "Today" to today,
+                        "Tomorrow" to today.plusDays(1),
+                        "In 3 days" to today.plusDays(3),
+                        "Next Monday" to today.with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
+                        "In 2 weeks" to today.plusWeeks(2),
+                    ),
+                )
+            }
+
+            Column {
+                FieldLabel("Can start from (optional)")
+                DateField(value = s.start, onChange = vm::onStart, emptyText = "Any time", quick = listOf("Today" to today, "Tomorrow" to today.plusDays(1)))
+                s.dateError?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = c.danger, modifier = Modifier.padding(start = 4.dp, top = 6.dp)) }
+            }
+
+            Column {
+                FieldLabel("Priority")
+                SegmentedTabs(Priority.entries, s.priority, vm::onPriority, { "${it.short} · ${it.label}" })
+            }
+
+            Column {
+                FieldLabel("Status")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TaskStatus.entries.forEach { st -> SmallChip(st.label, selected = st == s.status, onClick = { vm.onStatus(st) }) }
+                }
+                AnimatedVisibility(s.status == TaskStatus.Done) {
+                    Column(Modifier.padding(top = 12.dp)) {
+                        FieldLabel("Done on")
+                        DateField(value = s.doneOn, onChange = vm::onDoneOn, emptyText = "Pick the day you finished")
+                    }
+                }
+            }
+
+            Column {
+                FieldLabel("Project")
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DotChip("None", c.textTertiary, selected = s.projectId == null, onClick = { vm.onProject(null) })
+                    projects.filter { !it.archived || it.id == s.projectId }.forEach { p ->
+                        DotChip(p.name, areaColor(p.colorIndex), selected = p.id == s.projectId, onClick = { vm.onProject(p) })
+                    }
+                }
+                if (projects.isEmpty()) {
+                    Text("Create projects from the Projects tab to group related tasks.", style = MaterialTheme.typography.labelSmall, color = c.textTertiary, modifier = Modifier.padding(start = 4.dp, top = 6.dp))
+                }
+            }
+
+            Column {
+                FieldLabel("Repeat")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Repeat.entries.forEach { r -> SmallChip(r.label, selected = r == s.repeat, onClick = { vm.onRepeat(r) }) }
+                }
+                if (s.repeat != Repeat.None) {
+                    Text(
+                        "Finishing it schedules the next one automatically.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = c.textTertiary,
+                        modifier = Modifier.padding(start = 4.dp, top = 6.dp),
+                    )
+                }
+            }
+
+            Column {
+                FieldLabel("Life area")
+                AreaChooser(areas, s.areaId, vm::onArea)
+            }
+
+            Column {
+                FieldLabel("Sub-area (optional)")
+                SuggestionField(s.subArea, vm::onSubArea, subAreas, placeholder = "e.g. Assignments")
+            }
+
+            Column {
+                FieldLabel("Notes (optional)")
+                MsTextField(value = s.notes, onValueChange = vm::onNotes, placeholder = "Anything worth remembering", singleLine = false, minLines = 3)
+            }
+        }
+        PrimaryButton(
+            text = if (s.isEditing) "Save Changes" else "Add Task",
+            onClick = vm::save,
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
+        )
+    }
+
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("Delete this task?") },
+            text = { Text("To keep it on record without counting it as a failure, set its status to Dropped instead.") },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; vm.delete(onDone) }) { Text("Delete", color = c.danger) } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+        )
+    }
+}

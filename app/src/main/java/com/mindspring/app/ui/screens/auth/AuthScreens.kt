@@ -102,8 +102,8 @@ fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
             Text("New here?", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary)
             GhostButton("Create account", onClick = onCreateAccount)
         }
-        // UI-phase convenience: the in-memory store ships with a sample account.
-        GhostButton("Use the demo account", onClick = vm::fillDemo, color = c.textTertiary)
+        // Opens a sample account with six weeks of history, to explore before logging your own.
+        GhostButton("Explore with sample data", onClick = vm::demo, color = c.textTertiary)
     }
 
     if (showForgot) {
@@ -186,7 +186,6 @@ private fun AuthScaffold(content: @Composable androidx.compose.foundation.layout
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MsTheme.colors.canvas)
             .statusBarsPadding()
             .navigationBarsPadding()
             .imePadding()

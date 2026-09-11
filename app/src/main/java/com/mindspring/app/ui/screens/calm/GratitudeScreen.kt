@@ -81,7 +81,7 @@ fun GratitudeScreen(onBack: () -> Unit) {
     var text by rememberSaveable { mutableStateOf("") }
     var expanded by rememberSaveable { mutableStateOf<Long?>(null) }
 
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         TealTopBar("Gratitude Journal", onNavigate = onBack)
         LazyColumn(
             modifier = Modifier.imePadding(),

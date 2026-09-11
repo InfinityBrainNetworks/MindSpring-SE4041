@@ -41,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -52,13 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.PrimaryButton
+import com.mindspring.app.ui.components.softShadow
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 
 /** The app's one moment of celebration: credits consistency, never perfection. */
 @Composable
 fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
-    val vm = appViewModel { HabitCompletedViewModel(it.auth, it.habits, habitId) }
+    val vm = appViewModel { HabitCompletedViewModel(it, habitId) }
     val s by vm.state.collectAsStateWithLifecycle()
     val c = MsTheme.colors
 
@@ -73,7 +73,7 @@ fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
         animationSpec = infiniteRepeatable(tween(1400), RepeatMode.Reverse), label = "sparkle",
     )
 
-    Box(Modifier.fillMaxSize().background(c.canvas)) {
+    Box(Modifier.fillMaxSize()) {
         // Soft ambient glow behind the content.
         Canvas(Modifier.fillMaxSize()) {
             drawCircle(
@@ -95,9 +95,9 @@ fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
                 Box(
                     Modifier
                         .size(192.dp)
-                        .shadow(24.dp, CircleShape, ambientColor = c.textPrimary.copy(alpha = 0.08f), spotColor = c.textPrimary.copy(alpha = 0.16f))
+                        .softShadow(CircleShape)
                         .clip(CircleShape)
-                        .background(c.card),
+                        .background(if (c.isDark) c.cardSubtle else androidx.compose.ui.graphics.Color.White),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = c.tealInk, modifier = Modifier.size(104.dp))
@@ -147,7 +147,7 @@ fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
                         Icon(Icons.Rounded.LocalFireDepartment, contentDescription = null, tint = c.amber, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            "$streak day streak",
+                            "$streak-${s?.unit?.singular ?: "day"} streak",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = c.textPrimary,

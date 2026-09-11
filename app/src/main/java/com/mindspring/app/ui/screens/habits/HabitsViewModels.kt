@@ -2,55 +2,135 @@ package com.mindspring.app.ui.screens.habits
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mindspring.app.AppContainer
 import com.mindspring.app.data.model.Habit
-import com.mindspring.app.data.model.HabitCategory
+import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
-import com.mindspring.app.data.repository.AuthRepository
-import com.mindspring.app.data.repository.HabitRepository
+import com.mindspring.app.data.model.LifeArea
+import com.mindspring.app.data.model.MarkState
 import com.mindspring.app.domain.HabitStats
+import com.mindspring.app.domain.HabitUnit
+import com.mindspring.app.domain.Tally
+import com.mindspring.app.domain.byHabit
+import com.mindspring.app.ui.components.TickState
+import com.mindspring.app.ui.screens.home.TodayHabit
+import com.mindspring.app.ui.screens.home.todayHabits
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 
-// ---------- Habits list ----------
+// ---------- Habits tab ----------
 
-data class HabitCardState(
-    val habit: Habit,
-    val doneToday: Boolean,
-    val scheduledToday: Boolean,
-    val weekDone: Int,
-    val weekTarget: Int,
-) {
-    val weekMet: Boolean get() = weekDone >= weekTarget
-}
+data class WeekCell(val date: LocalDate, val tick: TickState, val enabled: Boolean, val isToday: Boolean)
 
-class HabitsViewModel(private val repo: HabitRepository) : ViewModel() {
-    val cards: StateFlow<List<HabitCardState>?> = combine(repo.habits, repo.completions) { habits, completions ->
+data class WeekRow(val habit: Habit, val cells: List<WeekCell>, val areaColor: Int?)
+
+data class HabitSummary(val habit: Habit, val month: Tally, val streak: Int, val unit: HabitUnit, val areaColor: Int?)
+
+data class AreaGroup(val area: LifeArea?, val tally: Tally, val habits: List<HabitSummary>)
+
+data class HabitsState(
+    val loaded: Boolean = false,
+    val today: List<TodayHabit> = emptyList(),
+    val weekStart: LocalDate = HabitStats.weekStart(LocalDate.now()),
+    val week: List<WeekRow> = emptyList(),
+    /** Share of day-based habits done on each day of the shown week (null: nothing was due). */
+    val dayScores: List<Float?> = emptyList(),
+    /** Open task deadlines on each day of the shown week. */
+    val deadlines: List<Int> = emptyList(),
+    val groups: List<AreaGroup> = emptyList(),
+    val retired: List<HabitSummary> = emptyList(),
+)
+
+enum class HabitsView(val label: String) { Today("Today"), Week("Week"), All("All") }
+
+class HabitsViewModel(private val app: AppContainer) : ViewModel() {
+    val view = MutableStateFlow(HabitsView.Today)
+    val weekOffset = MutableStateFlow(0L)
+
+    val state: StateFlow<HabitsState> = combine(
+        app.habits.habits, app.habits.marks, app.areas.areas, app.tasks.tasks, weekOffset,
+    ) { habits, marks, areas, tasks, offset ->
         val today = LocalDate.now()
-        val done = completions.groupBy({ it.habitId }, { it.date }).mapValues { it.value.toSet() }
-        habits.map { habit ->
-            val dates = done[habit.id].orEmpty()
-            HabitCardState(
-                habit = habit,
-                doneToday = today in dates,
-                scheduledToday = HabitStats.isScheduled(habit, today),
-                weekDone = HabitStats.completedThisWeek(dates, today),
-                weekTarget = habit.days.size,
+        val byHabit = marks.byHabit()
+        val areaColors = areas.associate { it.id to it.colorIndex }
+        val monday = HabitStats.weekStart(today).plusWeeks(offset)
+        val days = (0L..6L).map { monday.plusDays(it) }
+        val active = habits.filter { it.active }
+            .sortedWith(compareBy<Habit> { it.frequency.ordinal }.thenBy { it.id })
+
+        val week = active.filter { !it.createdAt.isAfter(days.last()) }.map { h ->
+            val hm = byHabit[h.id].orEmpty()
+            WeekRow(
+                habit = h,
+                cells = days.map { d ->
+                    val allowed = !d.isBefore(h.createdAt) && !d.isAfter(today) && (!h.frequency.isDayBased || d.dayOfWeek in h.days)
+                    val tick = when (hm[d]) {
+                        MarkState.Done -> TickState.Done
+                        MarkState.Skipped -> TickState.Skipped
+                        null -> if (allowed) TickState.Empty else TickState.Off
+                    }
+                    WeekCell(d, tick, allowed || hm[d] != null, d == today)
+                },
+                areaColor = h.areaId?.let(areaColors::get),
             )
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun setDone(habitId: Long, done: Boolean) {
-        viewModelScope.launch { repo.setCompleted(habitId, LocalDate.now(), done) }
+        val month = YearMonth.from(today)
+        fun summary(h: Habit): HabitSummary {
+            val hm = byHabit[h.id].orEmpty()
+            return HabitSummary(
+                habit = h,
+                month = HabitStats.tally(h, hm, month.atDay(1), month.atEndOfMonth(), today),
+                streak = HabitStats.currentStreak(h, hm, today),
+                unit = HabitStats.unit(h),
+                areaColor = h.areaId?.let(areaColors::get),
+            )
+        }
+        val areaById = areas.associateBy { it.id }
+        val groups = active.map(::summary)
+            .groupBy { it.habit.areaId?.let(areaById::get) }
+            .map { (area, list) -> AreaGroup(area, list.fold(Tally.Zero) { acc, s -> acc + s.month }, list) }
+            .sortedBy { it.area?.sortOrder ?: Int.MAX_VALUE }
+
+        val openTasks = tasks.filter { it.status.isOpen }
+        HabitsState(
+            loaded = true,
+            today = todayHabits(habits, byHabit, areaColors, today),
+            weekStart = monday,
+            week = week,
+            dayScores = days.map { if (it.isAfter(today)) null else HabitStats.dayScore(active, byHabit, it) },
+            deadlines = days.map { d -> openTasks.count { it.due == d } },
+            groups = groups,
+            retired = habits.filter { !it.active }.map(::summary),
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HabitsState())
+
+    fun toggleDone(item: TodayHabit) = mark(item.habit.id, LocalDate.now(), if (item.mark == MarkState.Done) null else MarkState.Done)
+
+    fun toggleSkip(item: TodayHabit) = mark(item.habit.id, LocalDate.now(), if (item.mark == MarkState.Skipped) null else MarkState.Skipped)
+
+    /** The grid's tap: blank → done → skipped → blank, like typing x, then -, then clearing. */
+    fun cycle(habitId: Long, cell: WeekCell) {
+        val next = when (cell.tick) {
+            TickState.Done -> MarkState.Skipped
+            TickState.Skipped -> null
+            else -> MarkState.Done
+        }
+        mark(habitId, cell.date, next)
+    }
+
+    private fun mark(habitId: Long, date: LocalDate, state: MarkState?) {
+        viewModelScope.launch { app.habits.setMark(habitId, date, state) }
     }
 }
 
@@ -59,44 +139,65 @@ class HabitsViewModel(private val repo: HabitRepository) : ViewModel() {
 data class HabitEditorState(
     val id: Long = 0,
     val name: String = "",
-    val category: HabitCategory = HabitCategory.Health,
-    val icon: HabitIcon = HabitIcon.Water,
-    val days: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
-    val reminderEnabled: Boolean = true,
+    val areaId: Long? = null,
+    val subArea: String = "",
+    val icon: HabitIcon = HabitIcon.Spa,
+    val frequency: HabitFrequency = HabitFrequency.Daily,
+    val customDays: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
+    val target: String = "",
+    val reminderEnabled: Boolean = false,
     val reminderTime: LocalTime = LocalTime.of(8, 0),
+    val active: Boolean = true,
     val createdAt: LocalDate = LocalDate.now(),
     val saved: Boolean = false,
 ) {
     val isEditing: Boolean get() = id != 0L
-    val canSave: Boolean get() = name.isNotBlank() && days.isNotEmpty()
+    val canSave: Boolean get() = name.isNotBlank() && (frequency != HabitFrequency.Custom || customDays.isNotEmpty())
+
+    fun toHabit() = Habit(id, name.trim(), areaId, subArea.trim(), icon, frequency, customDays, target.trim(), reminderEnabled, reminderTime, active, createdAt)
 }
 
-class HabitEditorViewModel(private val repo: HabitRepository, habitId: Long?) : ViewModel() {
+class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : ViewModel() {
     private val _state = MutableStateFlow(HabitEditorState())
     val state: StateFlow<HabitEditorState> = _state
+
+    val areas: StateFlow<List<LifeArea>> = app.areas.areas.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Sub-areas already used on habits and tasks, most used first. */
+    val subAreas: StateFlow<List<String>> = combine(app.habits.habits, app.tasks.tasks) { h, t ->
+        (h.map { it.subArea } + t.map { it.subArea }).filter { it.isNotBlank() }
+            .groupingBy { it.trim() }.eachCount().entries.sortedByDescending { it.value }.map { it.key }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
         if (habitId != null) {
             viewModelScope.launch {
-                repo.habit(habitId).first()?.let { h ->
-                    _state.value = HabitEditorState(h.id, h.name, h.category, h.icon, h.days, h.reminderEnabled, h.reminderTime, h.createdAt)
+                app.habits.habit(habitId).first()?.let { h ->
+                    _state.value = HabitEditorState(
+                        h.id, h.name, h.areaId, h.subArea, h.icon, h.frequency, h.customDays, h.target,
+                        h.reminderEnabled, h.reminderTime, h.active, h.createdAt,
+                    )
                 }
             }
         }
     }
 
-    fun onName(v: String) = _state.update { it.copy(name = v.take(40)) }
-    fun onCategory(v: HabitCategory) = _state.update { it.copy(category = v) }
+    fun onName(v: String) = _state.update { it.copy(name = v.take(60)) }
+    fun onArea(v: Long?) = _state.update { it.copy(areaId = v) }
+    fun onSubArea(v: String) = _state.update { it.copy(subArea = v) }
     fun onIcon(v: HabitIcon) = _state.update { it.copy(icon = v) }
-    fun onToggleDay(d: DayOfWeek) = _state.update { s -> s.copy(days = if (d in s.days) s.days - d else s.days + d) }
+    fun onFrequency(v: HabitFrequency) = _state.update { it.copy(frequency = v) }
+    fun onToggleDay(d: DayOfWeek) = _state.update { s -> s.copy(customDays = if (d in s.customDays) s.customDays - d else s.customDays + d) }
+    fun onTarget(v: String) = _state.update { it.copy(target = v.take(24)) }
     fun onReminderEnabled(v: Boolean) = _state.update { it.copy(reminderEnabled = v) }
     fun onReminderTime(v: LocalTime) = _state.update { it.copy(reminderTime = v) }
+    fun onActive(v: Boolean) = _state.update { it.copy(active = v) }
 
     fun save() {
         val s = _state.value
         if (!s.canSave) return
         viewModelScope.launch {
-            repo.upsert(Habit(s.id, s.name.trim(), s.category, s.icon, s.days, s.reminderEnabled, s.reminderTime, s.createdAt))
+            app.habits.upsert(s.toHabit())
             _state.update { it.copy(saved = true) }
         }
     }
@@ -104,60 +205,72 @@ class HabitEditorViewModel(private val repo: HabitRepository, habitId: Long?) : 
 
 // ---------- Detail ----------
 
-enum class DayCell { Done, Missed, Rest, Future, Before }
+enum class DayCell { Done, Skipped, Missed, Rest, Open, Future, Before }
 
 data class HabitDetailState(
     val habit: Habit,
+    val area: LifeArea?,
+    val unit: HabitUnit,
     val streak: Int,
     val bestStreak: Int,
-    val monthRate: Float,
-    val totalDays: Int,
-    val doneToday: Boolean,
+    val month: Tally,
+    val totalDone: Int,
+    val todayMark: MarkState?,
+    val belongsToday: Boolean,
     /** Five Monday-first weeks ending with the current week. */
     val grid: List<List<Pair<LocalDate, DayCell>>>,
     val streakDays: Set<LocalDate>,
 )
 
-class HabitDetailViewModel(private val repo: HabitRepository, private val habitId: Long) : ViewModel() {
-    val state: StateFlow<HabitDetailState?> = combine(repo.habit(habitId), repo.completions) { habit, completions ->
+class HabitDetailViewModel(private val app: AppContainer, private val habitId: Long) : ViewModel() {
+    val state: StateFlow<HabitDetailState?> = combine(app.habits.habit(habitId), app.habits.marks, app.areas.areas) { habit, marks, areas ->
         habit ?: return@combine null
         val today = LocalDate.now()
-        val done = completions.filter { it.habitId == habitId }.map { it.date }.toSet()
-        val streakDays = HabitStats.streakDates(habit, done, today)
+        val hm = marks.filter { it.habitId == habitId }.associate { it.date to it.state }
+        val month = YearMonth.from(today)
         HabitDetailState(
             habit = habit,
-            streak = streakDays.size,
-            bestStreak = HabitStats.bestStreak(habit, done, today),
-            monthRate = HabitStats.completionRate(habit, done, today.withDayOfMonth(1), today),
-            totalDays = done.size,
-            doneToday = today in done,
-            grid = buildGrid(habit, done, today),
-            streakDays = streakDays,
+            area = areas.firstOrNull { it.id == habit.areaId },
+            unit = HabitStats.unit(habit),
+            streak = HabitStats.currentStreak(habit, hm, today),
+            bestStreak = HabitStats.bestStreak(habit, hm, today),
+            month = HabitStats.tally(habit, hm, month.atDay(1), month.atEndOfMonth(), today),
+            totalDone = hm.count { it.value == MarkState.Done },
+            todayMark = hm[today],
+            belongsToday = HabitStats.belongsOn(habit, today),
+            grid = buildGrid(habit, hm, today),
+            streakDays = HabitStats.streakDates(habit, hm, today),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun setDoneToday(done: Boolean) {
-        viewModelScope.launch { repo.setCompleted(habitId, LocalDate.now(), done) }
+    fun setToday(state: MarkState?) {
+        viewModelScope.launch { app.habits.setMark(habitId, LocalDate.now(), state) }
+    }
+
+    fun setActive(active: Boolean) {
+        val habit = state.value?.habit ?: return
+        viewModelScope.launch { app.habits.upsert(habit.copy(active = active)) }
     }
 
     fun delete(onDeleted: () -> Unit) {
         viewModelScope.launch {
-            repo.delete(habitId)
+            app.habits.delete(habitId)
             onDeleted()
         }
     }
 
-    private fun buildGrid(habit: Habit, done: Set<LocalDate>, today: LocalDate): List<List<Pair<LocalDate, DayCell>>> {
-        val thisMonday = today.minusDays((today.dayOfWeek.value - 1).toLong())
-        val start = thisMonday.minusWeeks(4)
+    private fun buildGrid(habit: Habit, marks: Map<LocalDate, MarkState>, today: LocalDate): List<List<Pair<LocalDate, DayCell>>> {
+        val start = HabitStats.weekStart(today).minusWeeks(4)
         return (0 until 5).map { week ->
             (0 until 7).map { d ->
                 val day = start.plusWeeks(week.toLong()).plusDays(d.toLong())
                 day to when {
                     day.isAfter(today) -> DayCell.Future
-                    day in done -> DayCell.Done
+                    marks[day] == MarkState.Done -> DayCell.Done
+                    marks[day] == MarkState.Skipped -> DayCell.Skipped
                     day.isBefore(habit.createdAt) -> DayCell.Before
-                    !HabitStats.isScheduled(habit, day) -> DayCell.Rest
+                    !habit.frequency.isDayBased -> DayCell.Open
+                    day.dayOfWeek !in habit.days -> DayCell.Rest
                     day == today -> DayCell.Future
                     else -> DayCell.Missed
                 }
@@ -168,17 +281,17 @@ class HabitDetailViewModel(private val repo: HabitRepository, private val habitI
 
 // ---------- Celebration ----------
 
-data class CompletedState(val userFirstName: String, val habitName: String, val streak: Int)
+data class CompletedState(val userFirstName: String, val habitName: String, val streak: Int, val unit: HabitUnit)
 
-class HabitCompletedViewModel(auth: AuthRepository, repo: HabitRepository, habitId: Long) : ViewModel() {
-    val state: StateFlow<CompletedState?> = combine(auth.currentUser, repo.habit(habitId), repo.completions.map { list ->
-        list.filter { it.habitId == habitId }.map { it.date }.toSet()
-    }) { user, habit, done ->
+class HabitCompletedViewModel(app: AppContainer, habitId: Long) : ViewModel() {
+    val state: StateFlow<CompletedState?> = combine(app.auth.currentUser, app.habits.habit(habitId), app.habits.marks) { user, habit, marks ->
         habit ?: return@combine null
+        val hm = marks.filter { it.habitId == habitId }.associate { it.date to it.state }
         CompletedState(
             userFirstName = user?.name?.substringBefore(' ').orEmpty(),
             habitName = habit.name,
-            streak = HabitStats.currentStreak(habit, done, LocalDate.now()),
+            streak = HabitStats.currentStreak(habit, hm, LocalDate.now()),
+            unit = HabitStats.unit(habit),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 }

@@ -79,7 +79,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     val scope = rememberCoroutineScope()
     val last = pager.currentPage == slides.lastIndex
 
-    Column(Modifier.fillMaxSize().background(c.canvas).statusBarsPadding().navigationBarsPadding()) {
+    Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = Dimens.stackSm, vertical = Dimens.stackSm), horizontalArrangement = Arrangement.End) {
             GhostButton("Skip", onClick = onFinish)
         }

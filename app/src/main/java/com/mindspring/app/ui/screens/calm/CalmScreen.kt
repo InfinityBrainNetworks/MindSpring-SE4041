@@ -25,8 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Air
+import androidx.compose.material.icons.rounded.AutoStories
 import androidx.compose.material.icons.rounded.CenterFocusStrong
 import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.material.icons.rounded.Timer
@@ -49,6 +51,7 @@ import com.mindspring.app.ui.components.IconCircle
 import com.mindspring.app.ui.components.MsCard
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.SectionTitle
+import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 
@@ -57,20 +60,22 @@ fun CalmScreen(
     userName: String,
     onBreathing: (technique: String) -> Unit,
     onGratitude: () -> Unit,
+    onJournal: () -> Unit,
+    onMoodHistory: () -> Unit,
     onOpenProfile: () -> Unit,
 ) {
     val c = MsTheme.colors
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         BrandTopBar(userName, onAvatarClick = onOpenProfile)
         Column(
             Modifier.verticalScroll(rememberScrollState()).padding(Dimens.screen),
             verticalArrangement = Arrangement.spacedBy(Dimens.stackMd),
         ) {
-            Text("Find Your Calm", style = MaterialTheme.typography.headlineSmall, color = c.textPrimary)
-            Text("Guided sessions to center your mind and body.", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary)
+            Text("Mind", style = MaterialTheme.typography.headlineSmall, color = c.textPrimary)
+            Text("Slow down, reflect, and notice what went well.", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary)
             Spacer(Modifier.height(Dimens.stackSm))
 
-            MsCard(Modifier.fillMaxWidth(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
+            MsCard(Modifier.fillMaxWidth().appear(0), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp)) {
                 BreathingArt(Modifier.fillMaxWidth().height(170.dp))
                 Column(Modifier.padding(horizontal = 8.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(Dimens.stackSm)) {
                     Text(
@@ -92,10 +97,14 @@ fun CalmScreen(
             }
 
             Spacer(Modifier.height(Dimens.stackSm))
-            SectionTitle("Explore Practices")
-            PracticeRow(Icons.Rounded.Air, c.teal, c.onTeal, "Calm Breathing", "Slow, steady breaths · 1–5 min") { onBreathing(TECHNIQUE_CALM) }
-            PracticeRow(Icons.Rounded.CenterFocusStrong, c.amber, c.onAmber, "Box Breathing", "4-4-4-4 technique for focus") { onBreathing(TECHNIQUE_BOX) }
-            PracticeRow(Icons.Rounded.EditNote, c.cardMuted, c.tealInk, "Gratitude Journal", "One good thing from today", onGratitude)
+            SectionTitle("Reflect")
+            PracticeRow(Icons.Rounded.AutoStories, c.amber, c.onAmber, "Daily Reflection", "About 150 words on how today went", onJournal, Modifier.appear(1))
+            PracticeRow(Icons.Rounded.EditNote, c.cardMuted, c.tealInk, "Gratitude Journal", "One good thing from today", onGratitude, Modifier.appear(2))
+            PracticeRow(Icons.Rounded.History, c.cardMuted, c.tealInk, "Mood History", "Every check-in, with notes", onMoodHistory, Modifier.appear(3))
+            Spacer(Modifier.height(Dimens.stackSm))
+            SectionTitle("Breathe")
+            PracticeRow(Icons.Rounded.Air, c.teal, c.onTeal, "Calm Breathing", "Slow, steady breaths · 1–5 min", { onBreathing(TECHNIQUE_CALM) }, Modifier.appear(4))
+            PracticeRow(Icons.Rounded.CenterFocusStrong, c.teal, c.onTeal, "Box Breathing", "4-4-4-4 technique for focus", { onBreathing(TECHNIQUE_BOX) }, Modifier.appear(5))
             Spacer(Modifier.height(Dimens.stackSm))
         }
     }
@@ -109,9 +118,10 @@ private fun PracticeRow(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val c = MsTheme.colors
-    MsCard(Modifier.fillMaxWidth(), onClick = onClick) {
+    MsCard(modifier.fillMaxWidth(), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconCircle(icon, background = iconBg, tint = iconTint)
             Spacer(Modifier.width(Dimens.stackMd))

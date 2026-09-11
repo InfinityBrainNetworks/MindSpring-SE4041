@@ -1,12 +1,14 @@
 package com.mindspring.app.ui.screens.habits
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,16 +27,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,34 +44,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.mindspring.app.data.model.HabitCategory
+import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
 import com.mindspring.app.ui.appViewModel
+import com.mindspring.app.ui.components.AreaChooser
 import com.mindspring.app.ui.components.DayToggle
 import com.mindspring.app.ui.components.FieldLabel
 import com.mindspring.app.ui.components.MsCard
 import com.mindspring.app.ui.components.MsTextField
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.SelectChip
+import com.mindspring.app.ui.components.SuggestionField
 import com.mindspring.app.ui.components.TealTopBar
+import com.mindspring.app.ui.components.TimePickerDialog
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.components.tint
 import com.mindspring.app.ui.components.vector
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
 import java.time.DayOfWeek
-import java.time.LocalTime
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
-    val vm = appViewModel { HabitEditorViewModel(it.habits, habitId) }
+    val vm = appViewModel { HabitEditorViewModel(it, habitId) }
     val s by vm.state.collectAsStateWithLifecycle()
+    val areas by vm.areas.collectAsStateWithLifecycle()
+    val subAreas by vm.subAreas.collectAsStateWithLifecycle()
     val c = MsTheme.colors
     var pickTime by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(s.saved) { if (s.saved) onDone() }
 
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         TealTopBar(
             title = if (s.isEditing) "Edit Habit" else "Add Habit",
             navigationIcon = Icons.Rounded.Close,
@@ -86,55 +88,54 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                 .weight(1f)
                 .imePadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = Dimens.screen, vertical = Dimens.stackLg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.stackLg),
+                .padding(horizontal = Dimens.screen, vertical = Dimens.stackLg - 8.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.stackLg - 8.dp),
         ) {
             Column {
-                FieldLabel("Habit Name")
+                FieldLabel("Habit")
                 MsTextField(
                     value = s.name,
                     onValueChange = vm::onName,
-                    placeholder = "e.g., Drink Water",
+                    placeholder = "e.g. Drink 2.5 L water",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
             }
 
             Column {
-                FieldLabel("Category")
-                Row(
-                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    HabitCategory.entries.forEach { category ->
-                        SelectChip(
-                            text = category.label,
-                            selected = category == s.category,
-                            onClick = { vm.onCategory(category) },
-                            selectedColor = c.amber,
-                            selectedContent = c.onAmber,
-                        )
+                FieldLabel("How often")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    HabitFrequency.entries.forEach { f ->
+                        val t = f.tint(c)
+                        SelectChip(f.label, selected = f == s.frequency, onClick = { vm.onFrequency(f) }, selectedColor = t.ink, selectedContent = if (c.isDark) Color(0xFF10201D) else Color.White)
                     }
                 }
-            }
-
-            Column {
-                FieldLabel("Icon")
-                MsCard(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    HabitIcon.entries.chunked(5).forEach { row ->
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    when (s.frequency) {
+                        HabitFrequency.Daily -> "Every day."
+                        HabitFrequency.Weekdays -> "Monday to Friday. Weekends are days off."
+                        HabitFrequency.Weekends -> "Saturday and Sunday only."
+                        HabitFrequency.Custom -> when (s.customDays.size) {
+                            0 -> "Pick at least one day."
+                            else -> "${s.customDays.size} days a week, on the days you pick."
+                        }
+                        HabitFrequency.Weekly -> "Once a week, on any day that suits."
+                        HabitFrequency.Monthly -> "Once a month, on any day that suits."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (s.frequency == HabitFrequency.Custom && s.customDays.isEmpty()) c.danger else c.textSecondary,
+                    modifier = Modifier.padding(start = 4.dp),
+                )
+                AnimatedVisibility(s.frequency == HabitFrequency.Custom) {
+                    MsCard(Modifier.fillMaxWidth().padding(top = 12.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            row.forEach { icon ->
-                                val selected = icon == s.icon
-                                val bg by animateColorAsState(if (selected) c.teal else Color.Transparent, label = "iconBg")
-                                Box(
-                                    Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(bg)
-                                        .clickable { vm.onIcon(icon) },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(icon.vector, contentDescription = icon.name, tint = if (selected) c.onTeal else c.tealInk)
-                                }
+                            DayOfWeek.entries.forEach { day ->
+                                DayToggle(
+                                    letter = day.name.take(1),
+                                    selected = day in s.customDays,
+                                    onClick = { vm.onToggleDay(day) },
+                                    modifier = Modifier.weight(1f, fill = false).size(40.dp).aspectRatio(1f),
+                                )
                             }
                         }
                     }
@@ -142,28 +143,38 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
             }
 
             Column {
-                FieldLabel("Frequency")
-                MsCard(Modifier.fillMaxWidth()) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        DayOfWeek.entries.forEach { day ->
-                            DayToggle(
-                                letter = day.name.take(1),
-                                selected = day in s.days,
-                                onClick = { vm.onToggleDay(day) },
-                                modifier = Modifier.weight(1f, fill = false).size(40.dp).aspectRatio(1f),
-                            )
+                FieldLabel("Target (optional)")
+                MsTextField(value = s.target, onValueChange = vm::onTarget, placeholder = "e.g. 8k steps, 20 min, 3 lines")
+            }
+
+            Column {
+                FieldLabel("Life area")
+                AreaChooser(areas, s.areaId, vm::onArea)
+            }
+
+            Column {
+                FieldLabel("Sub-area (optional)")
+                SuggestionField(s.subArea, vm::onSubArea, subAreas, placeholder = "e.g. Physical Health")
+            }
+
+            Column {
+                FieldLabel("Icon")
+                MsCard(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    HabitIcon.entries.chunked(6).forEach { row ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            row.forEach { icon ->
+                                val selected = icon == s.icon
+                                val bg by animateColorAsState(if (selected) c.teal else Color.Transparent, label = "iconBg")
+                                Box(
+                                    Modifier.size(44.dp).clip(CircleShape).background(bg).clickable { vm.onIcon(icon) },
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(icon.vector, contentDescription = icon.name, tint = if (selected) c.onTeal else c.tealInk)
+                                }
+                            }
+                            repeat(6 - row.size) { Spacer(Modifier.size(44.dp)) }
                         }
                     }
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        when (s.days.size) {
-                            0 -> "Pick at least one day."
-                            7 -> "Every day"
-                            else -> "${s.days.size} days a week"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (s.days.isEmpty()) c.danger else c.textSecondary,
-                    )
                 }
             }
 
@@ -172,23 +183,15 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                 MsCard(Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Row(
-                            Modifier
-                                .weight(1f)
-                                .clip(MaterialTheme.shapes.small)
-                                .clickable(enabled = s.reminderEnabled) { pickTime = true }
-                                .padding(vertical = 4.dp),
+                            Modifier.weight(1f).clip(MaterialTheme.shapes.small).clickable(enabled = s.reminderEnabled) { pickTime = true }.padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Outlined.Notifications, contentDescription = null, tint = c.tealInk)
                             Spacer(Modifier.width(12.dp))
                             Column {
+                                Text(Fmt.time(s.reminderTime), style = MaterialTheme.typography.bodyLarge, color = if (s.reminderEnabled) c.textPrimary else c.textTertiary)
                                 Text(
-                                    Fmt.time(s.reminderTime),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = if (s.reminderEnabled) c.textPrimary else c.textTertiary,
-                                )
-                                Text(
-                                    if (s.reminderEnabled) "Tap to change time" else "Reminder off",
+                                    if (s.reminderEnabled) "Tap to change the time" else "Reminder off",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = c.textTertiary,
                                 )
@@ -198,15 +201,28 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                     }
                 }
             }
+
+            if (s.isEditing) {
+                MsCard(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Active", style = MaterialTheme.typography.bodyLarge, color = c.textPrimary)
+                            Text(
+                                "Turn off to retire it. History is kept and it stops counting.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = c.textTertiary,
+                            )
+                        }
+                        Switch(checked = s.active, onCheckedChange = vm::onActive, colors = msSwitchColors())
+                    }
+                }
+            }
         }
         PrimaryButton(
             text = if (s.isEditing) "Save Changes" else "Save Habit",
             onClick = vm::save,
             enabled = s.canSave,
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
+            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
         )
     }
 
@@ -216,31 +232,4 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
             pickTime = false
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerDialog(initial: LocalTime, onDismiss: () -> Unit, onConfirm: (LocalTime) -> Unit) {
-    val c = MsTheme.colors
-    val state = rememberTimePickerState(initialHour = initial.hour, initialMinute = initial.minute, is24Hour = false)
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = { onConfirm(LocalTime.of(state.hour, state.minute)) }) { Text("OK") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-        title = { Text("Reminder time") },
-        text = {
-            TimePicker(
-                state = state,
-                colors = TimePickerDefaults.colors(
-                    clockDialColor = c.cardMuted,
-                    selectorColor = c.teal,
-                    timeSelectorSelectedContainerColor = c.amber,
-                    timeSelectorSelectedContentColor = c.onAmber,
-                    timeSelectorUnselectedContainerColor = c.cardMuted,
-                    periodSelectorSelectedContainerColor = c.amber,
-                    periodSelectorSelectedContentColor = c.onAmber,
-                ),
-            )
-        },
-    )
 }

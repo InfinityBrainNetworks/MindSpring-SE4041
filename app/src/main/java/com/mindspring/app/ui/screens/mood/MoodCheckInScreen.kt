@@ -54,7 +54,7 @@ fun MoodCheckInScreen(entryId: Long?, initialRating: Int?, onDone: () -> Unit) {
 
     LaunchedEffect(s.saved) { if (s.saved) onDone() }
 
-    Column(Modifier.fillMaxSize().background(c.canvas)) {
+    Column(Modifier.fillMaxSize()) {
         TaskTopBar(if (s.isEditing) "Edit Check-in" else "Mood Check-in", onBack = onDone)
         Column(
             Modifier

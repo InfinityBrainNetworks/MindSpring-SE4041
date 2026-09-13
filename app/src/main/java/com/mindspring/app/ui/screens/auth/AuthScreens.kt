@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.ui.appViewModel
@@ -49,6 +50,7 @@ import com.mindspring.app.ui.components.MsCard
 import com.mindspring.app.ui.components.MsTextField
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.Wordmark
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 
@@ -56,10 +58,34 @@ import com.mindspring.app.ui.theme.MsTheme
 fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
     val vm = appViewModel { AuthViewModel(it.auth) }
     val s by vm.state.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
-    var showForgot by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(s.signedIn) { if (s.signedIn) onSignedIn() }
+
+    LoginContent(
+        s = s,
+        onEmail = vm::onEmail,
+        onPassword = vm::onPassword,
+        onLogin = vm::login,
+        onDemo = vm::demo,
+        onCreateAccount = onCreateAccount,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [LoginScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun LoginContent(
+    s: AuthUiState,
+    onEmail: (String) -> Unit,
+    onPassword: (String) -> Unit,
+    onLogin: () -> Unit,
+    onDemo: () -> Unit,
+    onCreateAccount: () -> Unit,
+) {
+    val c = MsTheme.colors
+    var showForgot by rememberSaveable { mutableStateOf(false) }
 
     AuthScaffold {
         Spacer(Modifier.height(Dimens.stackLg))
@@ -76,13 +102,13 @@ fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
             )
             MsTextField(
                 value = s.email,
-                onValueChange = vm::onEmail,
+                onValueChange = onEmail,
                 label = "Email",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             )
             MsTextField(
                 value = s.password,
-                onValueChange = vm::onPassword,
+                onValueChange = onPassword,
                 label = "Password",
                 isPassword = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -94,7 +120,7 @@ fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
                 modifier = Modifier.align(Alignment.End).clickable { showForgot = true }.padding(4.dp),
             )
             ErrorText(s.error)
-            SubmitButton("Log In", loading = s.loading, onClick = vm::login)
+            SubmitButton("Log In", loading = s.loading, onClick = onLogin)
         }
 
         Spacer(Modifier.height(Dimens.stackLg))
@@ -103,7 +129,7 @@ fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
             GhostButton("Create account", onClick = onCreateAccount)
         }
         // Opens a sample account with six weeks of history, to explore before logging your own.
-        GhostButton("Explore with sample data", onClick = vm::demo, color = c.textTertiary)
+        GhostButton("Explore with sample data", onClick = onDemo, color = c.textTertiary)
     }
 
     if (showForgot) {
@@ -125,9 +151,37 @@ fun LoginScreen(onSignedIn: () -> Unit, onCreateAccount: () -> Unit) {
 fun RegisterScreen(onSignedIn: () -> Unit, onBack: () -> Unit) {
     val vm = appViewModel { AuthViewModel(it.auth) }
     val s by vm.state.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
 
     LaunchedEffect(s.signedIn) { if (s.signedIn) onSignedIn() }
+
+    RegisterContent(
+        s = s,
+        onName = vm::onName,
+        onEmail = vm::onEmail,
+        onPassword = vm::onPassword,
+        onConfirm = vm::onConfirm,
+        onAgreed = vm::onAgreed,
+        onRegister = vm::register,
+        onBack = onBack,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [RegisterScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun RegisterContent(
+    s: AuthUiState,
+    onName: (String) -> Unit,
+    onEmail: (String) -> Unit,
+    onPassword: (String) -> Unit,
+    onConfirm: (String) -> Unit,
+    onAgreed: (Boolean) -> Unit,
+    onRegister: () -> Unit,
+    onBack: () -> Unit,
+) {
+    val c = MsTheme.colors
 
     AuthScaffold {
         Row(Modifier.fillMaxWidth()) {
@@ -143,19 +197,19 @@ fun RegisterScreen(onSignedIn: () -> Unit, onBack: () -> Unit) {
 
         MsCard(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.stackSm)) {
             val next = KeyboardOptions(imeAction = ImeAction.Next)
-            MsTextField(s.name, vm::onName, label = "Full Name", isError = s.showErrors && s.nameError != null, errorText = s.nameError, keyboardOptions = next)
+            MsTextField(s.name, onName, label = "Full Name", isError = s.showErrors && s.nameError != null, errorText = s.nameError, keyboardOptions = next)
             MsTextField(
-                s.email, vm::onEmail, label = "Email Address",
+                s.email, onEmail, label = "Email Address",
                 isError = s.showErrors && s.emailError != null, errorText = s.emailError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             )
-            MsTextField(s.password, vm::onPassword, label = "Password", isPassword = true, isError = s.showErrors && s.passwordError != null, errorText = s.passwordError, keyboardOptions = next)
-            MsTextField(s.confirm, vm::onConfirm, label = "Confirm Password", isPassword = true, isError = s.showErrors && s.confirmError != null, errorText = s.confirmError)
+            MsTextField(s.password, onPassword, label = "Password", isPassword = true, isError = s.showErrors && s.passwordError != null, errorText = s.passwordError, keyboardOptions = next)
+            MsTextField(s.confirm, onConfirm, label = "Confirm Password", isPassword = true, isError = s.showErrors && s.confirmError != null, errorText = s.confirmError)
 
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(top = 4.dp)) {
                 Checkbox(
                     checked = s.agreed,
-                    onCheckedChange = vm::onAgreed,
+                    onCheckedChange = onAgreed,
                     colors = CheckboxDefaults.colors(checkedColor = c.tealInk, uncheckedColor = c.textTertiary),
                 )
                 Column(Modifier.padding(top = 12.dp)) {
@@ -170,7 +224,7 @@ fun RegisterScreen(onSignedIn: () -> Unit, onBack: () -> Unit) {
             }
             ErrorText(s.error)
             Spacer(Modifier.height(Dimens.stackSm))
-            SubmitButton("Create Account", loading = s.loading, onClick = vm::register)
+            SubmitButton("Create Account", loading = s.loading, onClick = onRegister)
         }
 
         Spacer(Modifier.height(Dimens.stackMd))
@@ -213,4 +267,51 @@ private fun SubmitButton(text: String, loading: Boolean, onClick: () -> Unit) {
     } else {
         PrimaryButton(text, onClick = onClick, modifier = Modifier.fillMaxWidth())
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Login", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun LoginScreenPreview() = PreviewScreen {
+    LoginContent(
+        s = AuthUiState(email = "asan@example.com", password = "hunter2"),
+        onEmail = {}, onPassword = {}, onLogin = {}, onDemo = {}, onCreateAccount = {},
+    )
+}
+
+@Preview(name = "Login · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun LoginScreenDarkPreview() = PreviewScreen(dark = true) {
+    LoginContent(
+        s = AuthUiState(email = "asan@example.com", password = "hunter2"),
+        onEmail = {}, onPassword = {}, onLogin = {}, onDemo = {}, onCreateAccount = {},
+    )
+}
+
+@Preview(name = "Login · wrong password", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun LoginScreenErrorPreview() = PreviewScreen {
+    LoginContent(
+        s = AuthUiState(email = "asan@example.com", password = "nope", error = "That email and password do not match."),
+        onEmail = {}, onPassword = {}, onLogin = {}, onDemo = {}, onCreateAccount = {},
+    )
+}
+
+@Preview(name = "Register", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun RegisterScreenPreview() = PreviewScreen {
+    RegisterContent(
+        s = AuthUiState(name = "Asan Perera", email = "asan@example.com", password = "hunter2", confirm = "hunter2", agreed = true),
+        onName = {}, onEmail = {}, onPassword = {}, onConfirm = {}, onAgreed = {}, onRegister = {}, onBack = {},
+    )
+}
+
+@Preview(name = "Register · validation errors", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun RegisterScreenErrorsPreview() = PreviewScreen {
+    RegisterContent(
+        s = AuthUiState(name = "", email = "not-an-email", password = "123", confirm = "456", showErrors = true),
+        onName = {}, onEmail = {}, onPassword = {}, onConfirm = {}, onAgreed = {}, onRegister = {}, onBack = {},
+    )
 }

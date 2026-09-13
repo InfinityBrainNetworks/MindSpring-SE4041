@@ -32,8 +32,11 @@ import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -45,11 +48,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.MarkState
 import com.mindspring.app.data.model.Mood
+import com.mindspring.app.data.model.Task
 import com.mindspring.app.data.model.TaskStatus
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.AnimatedCount
@@ -69,7 +74,11 @@ import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.color
 import com.mindspring.app.ui.components.emoji
 import com.mindspring.app.domain.JournalTargets
+import com.mindspring.app.ui.preview.PreviewEmptyHomeState
+import com.mindspring.app.ui.preview.PreviewHomeState
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
+import com.mindspring.app.ui.theme.MindSpringTheme
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
 import kotlinx.coroutines.launch
@@ -89,6 +98,43 @@ fun HomeScreen(
     val vm = appViewModel { HomeViewModel(it) }
     val s by vm.state.collectAsStateWithLifecycle()
 
+    HomeContent(
+        s = s,
+        onCheckIn = onCheckIn,
+        onEditMood = onEditMood,
+        onOpenHabit = onOpenHabit,
+        onAddHabit = onAddHabit,
+        onOpenTasks = onOpenTasks,
+        onOpenTask = onOpenTask,
+        onOpenJournal = onOpenJournal,
+        onOpenProfile = onOpenProfile,
+        onToggleTask = { task -> if (task.status == TaskStatus.Done) vm.reopenTask(task) else vm.completeTask(task) },
+        onToggleHabitDone = vm::toggleDone,
+        onToggleHabitSkip = vm::toggleSkip,
+        onSaveGratitude = vm::saveGratitude,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview and in tests without a
+ * ViewModel behind it. [HomeScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun HomeContent(
+    s: HomeUiState,
+    onCheckIn: (rating: Int?) -> Unit,
+    onEditMood: (entryId: Long) -> Unit,
+    onOpenHabit: (Long) -> Unit,
+    onAddHabit: () -> Unit,
+    onOpenTasks: () -> Unit,
+    onOpenTask: (Long) -> Unit,
+    onOpenJournal: (LocalDate) -> Unit,
+    onOpenProfile: () -> Unit,
+    onToggleTask: (Task) -> Unit,
+    onToggleHabitDone: (TodayHabit) -> Unit,
+    onToggleHabitSkip: (TodayHabit) -> Unit,
+    onSaveGratitude: (String) -> Unit,
+) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         GreetingHeader(s, onOpenProfile)
         Column(
@@ -97,11 +143,11 @@ fun HomeScreen(
         ) {
             MoodHeroCard(s, onCheckIn, onEditMood, Modifier.appear(0))
             DayAtAGlance(s, onOpenTasks, Modifier.appear(1))
-            if (s.upNext.isNotEmpty()) UpNextCard(s, vm, onOpenTask, onOpenTasks, Modifier.appear(2))
-            TodayHabitsCard(s, vm, onOpenHabit, onAddHabit, Modifier.appear(3))
+            if (s.upNext.isNotEmpty()) UpNextCard(s, onToggleTask, onOpenTask, onOpenTasks, Modifier.appear(2))
+            TodayHabitsCard(s, onToggleHabitDone, onToggleHabitSkip, onOpenHabit, onAddHabit, Modifier.appear(3))
             ReflectionCard(s, onOpenJournal, Modifier.appear(4))
             if (s.streaks.isNotEmpty()) StreaksCard(s.streaks, Modifier.appear(5))
-            GratitudeCard(onSave = vm::saveGratitude, modifier = Modifier.appear(6))
+            GratitudeCard(onSave = onSaveGratitude, modifier = Modifier.appear(6))
             Spacer(Modifier.height(Dimens.stackSm))
         }
     }
@@ -227,7 +273,7 @@ private fun GlanceTile(label: String, value: Int, color: Color, onClick: () -> U
 }
 
 @Composable
-private fun UpNextCard(s: HomeUiState, vm: HomeViewModel, onOpenTask: (Long) -> Unit, onOpenTasks: () -> Unit, modifier: Modifier) {
+private fun UpNextCard(s: HomeUiState, onToggleTask: (Task) -> Unit, onOpenTask: (Long) -> Unit, onOpenTasks: () -> Unit, modifier: Modifier) {
     val c = MsTheme.colors
     MsCard(modifier.fillMaxWidth().animateContentSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 12.dp, end = 12.dp, top = 18.dp, bottom = 8.dp)) {
         SectionTitle("Up next", Modifier.padding(horizontal = 8.dp)) {
@@ -245,7 +291,7 @@ private fun UpNextCard(s: HomeUiState, vm: HomeViewModel, onOpenTask: (Long) -> 
                 task = line.task,
                 flag = line.flag,
                 projectName = line.projectName,
-                onToggle = { if (line.task.status == TaskStatus.Done) vm.reopenTask(line.task) else vm.completeTask(line.task) },
+                onToggle = { onToggleTask(line.task) },
                 onClick = { onOpenTask(line.task.id) },
             )
         }
@@ -253,7 +299,14 @@ private fun UpNextCard(s: HomeUiState, vm: HomeViewModel, onOpenTask: (Long) -> 
 }
 
 @Composable
-private fun TodayHabitsCard(s: HomeUiState, vm: HomeViewModel, onOpenHabit: (Long) -> Unit, onAddHabit: () -> Unit, modifier: Modifier) {
+private fun TodayHabitsCard(
+    s: HomeUiState,
+    onToggleDone: (TodayHabit) -> Unit,
+    onToggleSkip: (TodayHabit) -> Unit,
+    onOpenHabit: (Long) -> Unit,
+    onAddHabit: () -> Unit,
+    modifier: Modifier,
+) {
     val c = MsTheme.colors
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
@@ -280,9 +333,9 @@ private fun TodayHabitsCard(s: HomeUiState, vm: HomeViewModel, onOpenHabit: (Lon
             HabitRow(
                 habit = item.habit,
                 tick = TickState.Empty,
-                onTick = { vm.toggleDone(item) },
+                onTick = { onToggleDone(item) },
                 onSkip = {
-                    vm.toggleSkip(item)
+                    onToggleSkip(item)
                     scope.launch { snackbar.showSnackbar("Skipped ${item.habit.name} for today") }
                 },
                 onClick = { onOpenHabit(item.habit.id) },
@@ -321,8 +374,8 @@ private fun TodayHabitsCard(s: HomeUiState, vm: HomeViewModel, onOpenHabit: (Lon
                                 item.mark == MarkState.Skipped -> TickState.Skipped
                                 else -> TickState.Done
                             },
-                            onTick = { if (item.mark == MarkState.Skipped) vm.toggleSkip(item) else if (item.mark == MarkState.Done) vm.toggleDone(item) else onOpenHabit(item.habit.id) },
-                            onSkip = { vm.toggleSkip(item) },
+                            onTick = { if (item.mark == MarkState.Skipped) onToggleSkip(item) else if (item.mark == MarkState.Done) onToggleDone(item) else onOpenHabit(item.habit.id) },
+                            onSkip = { onToggleSkip(item) },
                             onClick = { onOpenHabit(item.habit.id) },
                             streak = item.streak,
                             unit = item.unit,
@@ -420,4 +473,123 @@ private fun GratitudeCard(onSave: (String) -> Unit, modifier: Modifier) {
             )
         }
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Previews
+//
+// HomeContent takes a HomeUiState and plain callbacks, so the whole screen renders in the IDE
+// against the sample state in ui/preview/PreviewData.kt. The section previews below it are there
+// for working on one card at a time without scrolling past the rest.
+// ---------------------------------------------------------------------------------------------
+
+@Preview(name = "Today", showBackground = true, widthDp = 393, heightDp = 1400)
+@Composable
+private fun HomeScreenPreview() = PreviewScreen {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        HomeContent(
+            s = PreviewHomeState,
+            onCheckIn = {}, onEditMood = {}, onOpenHabit = {}, onAddHabit = {}, onOpenTasks = {},
+            onOpenTask = {}, onOpenJournal = {}, onOpenProfile = {}, onToggleTask = {},
+            onToggleHabitDone = {}, onToggleHabitSkip = {}, onSaveGratitude = {},
+        )
+    }
+}
+
+@Preview(name = "Today · dark", showBackground = true, widthDp = 393, heightDp = 1400)
+@Composable
+private fun HomeScreenDarkPreview() = PreviewScreen(dark = true) {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        HomeContent(
+            s = PreviewHomeState,
+            onCheckIn = {}, onEditMood = {}, onOpenHabit = {}, onAddHabit = {}, onOpenTasks = {},
+            onOpenTask = {}, onOpenJournal = {}, onOpenProfile = {}, onToggleTask = {},
+            onToggleHabitDone = {}, onToggleHabitSkip = {}, onSaveGratitude = {},
+        )
+    }
+}
+
+@Preview(name = "Today · new account", showBackground = true, widthDp = 393, heightDp = 1100)
+@Composable
+private fun HomeScreenEmptyPreview() = PreviewScreen {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        HomeContent(
+            s = PreviewEmptyHomeState,
+            onCheckIn = {}, onEditMood = {}, onOpenHabit = {}, onAddHabit = {}, onOpenTasks = {},
+            onOpenTask = {}, onOpenJournal = {}, onOpenProfile = {}, onToggleTask = {},
+            onToggleHabitDone = {}, onToggleHabitSkip = {}, onSaveGratitude = {},
+        )
+    }
+}
+
+/** Previews need a snackbar host in scope because GratitudeCard reports saves through one. */
+@Composable
+private fun HomePreviewHost(dark: Boolean = false, content: @Composable () -> Unit) {
+    MindSpringTheme(darkTheme = dark, ambientMotion = false) {
+        CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+            Surface(color = MsTheme.colors.canvas) {
+                Column(Modifier.padding(Dimens.gutter), verticalArrangement = Arrangement.spacedBy(Dimens.stackMd)) {
+                    content()
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "Greeting header", showBackground = true, widthDp = 393)
+@Composable
+private fun GreetingHeaderPreview() = MindSpringTheme(ambientMotion = false) {
+    Surface(color = MsTheme.colors.canvas) {
+        GreetingHeader(PreviewHomeState, onAvatar = {})
+    }
+}
+
+@Preview(name = "Mood hero card", showBackground = true, widthDp = 393)
+@Composable
+private fun MoodHeroCardPreview() = HomePreviewHost {
+    MoodHeroCard(PreviewHomeState, onCheckIn = {}, onEditMood = {}, modifier = Modifier)
+}
+
+@Preview(name = "Mood hero card · not checked in", showBackground = true, widthDp = 393)
+@Composable
+private fun MoodHeroCardEmptyPreview() = HomePreviewHost {
+    MoodHeroCard(PreviewEmptyHomeState, onCheckIn = {}, onEditMood = {}, modifier = Modifier)
+}
+
+@Preview(name = "Day at a glance", showBackground = true, widthDp = 393)
+@Composable
+private fun DayAtAGlancePreview() = HomePreviewHost {
+    DayAtAGlance(PreviewHomeState, onOpenTasks = {}, modifier = Modifier)
+}
+
+@Preview(name = "Reflection card", showBackground = true, widthDp = 393)
+@Composable
+private fun ReflectionCardPreview() = HomePreviewHost {
+    ReflectionCard(PreviewHomeState, onOpenJournal = {}, modifier = Modifier)
+}
+
+@Preview(name = "Reflection card · nothing written", showBackground = true, widthDp = 393)
+@Composable
+private fun ReflectionCardEmptyPreview() = HomePreviewHost {
+    ReflectionCard(PreviewEmptyHomeState, onOpenJournal = {}, modifier = Modifier)
+}
+
+@Preview(name = "Streaks card", showBackground = true, widthDp = 393)
+@Composable
+private fun StreaksCardPreview() = HomePreviewHost {
+    StreaksCard(PreviewHomeState.streaks, modifier = Modifier)
+}
+
+@Preview(name = "Gratitude card", showBackground = true, widthDp = 393)
+@Composable
+private fun GratitudeCardPreview() = HomePreviewHost {
+    GratitudeCard(onSave = {}, modifier = Modifier)
+}
+
+@Preview(name = "Today sections · dark", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun TodaySectionsDarkPreview() = HomePreviewHost(dark = true) {
+    MoodHeroCard(PreviewHomeState, onCheckIn = {}, onEditMood = {}, modifier = Modifier)
+    DayAtAGlance(PreviewHomeState, onOpenTasks = {}, modifier = Modifier)
+    StreaksCard(PreviewHomeState.streaks, modifier = Modifier)
 }

@@ -48,9 +48,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.MarkState
+import com.mindspring.app.domain.HabitStats
+import com.mindspring.app.domain.HabitUnit
+import com.mindspring.app.domain.Tally
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.AnimatedCount
 import com.mindspring.app.ui.components.FrequencyPill
@@ -63,6 +67,10 @@ import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.Tint
 import com.mindspring.app.ui.components.appear
+import com.mindspring.app.ui.preview.PreviewAreas
+import com.mindspring.app.ui.preview.PreviewHabits
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewToday
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.theme.areaColor
@@ -79,6 +87,32 @@ fun HabitDetailScreen(
 ) {
     val vm = appViewModel { HabitDetailViewModel(it, habitId) }
     val state by vm.state.collectAsStateWithLifecycle()
+
+    HabitDetailContent(
+        state = state,
+        onSetToday = vm::setToday,
+        onSetActive = vm::setActive,
+        onDelete = vm::delete,
+        onBack = onBack,
+        onEdit = onEdit,
+        onCompleted = onCompleted,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [HabitDetailScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun HabitDetailContent(
+    state: HabitDetailState?,
+    onSetToday: (MarkState?) -> Unit,
+    onSetActive: (Boolean) -> Unit,
+    onDelete: (onDeleted: () -> Unit) -> Unit,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onCompleted: () -> Unit,
+) {
     val c = MsTheme.colors
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
@@ -128,14 +162,14 @@ fun HabitDetailScreen(
                     MarkState.Done -> OutlinePillButton(
                         "Completed today · tap to undo",
                         leadingIcon = Icons.Rounded.CheckCircle,
-                        onClick = { vm.setToday(null) },
+                        onClick = { onSetToday(null) },
                         contentColor = c.tealInk,
                         borderColor = c.tealInk.copy(alpha = 0.5f),
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                     )
                     MarkState.Skipped -> OutlinePillButton(
                         "Skipped today · tap to undo",
-                        onClick = { vm.setToday(null) },
+                        onClick = { onSetToday(null) },
                         contentColor = c.textSecondary,
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                     )
@@ -143,12 +177,12 @@ fun HabitDetailScreen(
                         PrimaryButton(
                             "Complete for Today",
                             leadingIcon = Icons.Rounded.CheckCircle,
-                            onClick = { vm.setToday(MarkState.Done); onCompleted() },
+                            onClick = { onSetToday(MarkState.Done); onCompleted() },
                             modifier = Modifier.fillMaxWidth(),
                         )
                         GhostButton(
                             "Skip today (doesn't count against you)",
-                            onClick = { vm.setToday(MarkState.Skipped) },
+                            onClick = { onSetToday(MarkState.Skipped) },
                             color = c.textSecondary,
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                         )
@@ -175,7 +209,7 @@ fun HabitDetailScreen(
             }
             GhostButton(
                 if (s.habit.active) "Retire this habit (keeps its history)" else "Bring this habit back",
-                onClick = { vm.setActive(!s.habit.active) },
+                onClick = { onSetActive(!s.habit.active) },
                 color = c.tealInk,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
@@ -189,7 +223,7 @@ fun HabitDetailScreen(
             title = { Text("Delete this habit?") },
             text = { Text("This removes the habit and its whole history. To stop tracking it but keep the history, retire it instead.") },
             confirmButton = {
-                TextButton(onClick = { confirmDelete = false; vm.delete(onBack) }) { Text("Delete", color = c.danger) }
+                TextButton(onClick = { confirmDelete = false; onDelete(onBack) }) { Text("Delete", color = c.danger) }
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
@@ -308,4 +342,63 @@ private fun Legend(color: Color, label: String) {
         Spacer(Modifier.width(6.dp))
         Text(label, style = MaterialTheme.typography.labelSmall, color = MsTheme.colors.textTertiary)
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+/** Five Monday-first weeks ending with the sample week: mostly done, a skip and a miss for texture. */
+private val previewDetailState: HabitDetailState = run {
+    val firstMonday = HabitStats.weekStart(PreviewToday).minusWeeks(4)
+    val grid = (0L until 5L).map { w ->
+        (0L until 7L).map { d ->
+            val date = firstMonday.plusWeeks(w).plusDays(d)
+            date to when {
+                date.isAfter(PreviewToday) -> DayCell.Future
+                date == PreviewToday -> DayCell.Open
+                (w * 7 + d) % 11 == 4L -> DayCell.Missed
+                (w * 7 + d) % 9 == 2L -> DayCell.Skipped
+                else -> DayCell.Done
+            }
+        }
+    }
+    HabitDetailState(
+        habit = PreviewHabits[1],
+        area = PreviewAreas[0],
+        unit = HabitUnit.Day,
+        streak = 12,
+        bestStreak = 21,
+        month = Tally(10, 13),
+        totalDone = 48,
+        todayMark = null,
+        belongsToday = true,
+        grid = grid,
+        streakDays = (1L..12L).map { PreviewToday.minusDays(it) }.toSet(),
+    )
+}
+
+@Preview(name = "Habit detail", showBackground = true, widthDp = 393, heightDp = 1250)
+@Composable
+private fun HabitDetailPreview() = PreviewScreen {
+    HabitDetailContent(
+        state = previewDetailState, onSetToday = {}, onSetActive = {}, onDelete = {},
+        onBack = {}, onEdit = {}, onCompleted = {},
+    )
+}
+
+@Preview(name = "Habit detail · done today", showBackground = true, widthDp = 393, heightDp = 1250)
+@Composable
+private fun HabitDetailDonePreview() = PreviewScreen {
+    HabitDetailContent(
+        state = previewDetailState.copy(todayMark = MarkState.Done, streak = 13),
+        onSetToday = {}, onSetActive = {}, onDelete = {}, onBack = {}, onEdit = {}, onCompleted = {},
+    )
+}
+
+@Preview(name = "Habit detail · dark", showBackground = true, widthDp = 393, heightDp = 1250)
+@Composable
+private fun HabitDetailDarkPreview() = PreviewScreen(dark = true) {
+    HabitDetailContent(
+        state = previewDetailState, onSetToday = {}, onSetActive = {}, onDelete = {},
+        onBack = {}, onEdit = {}, onCompleted = {},
+    )
 }

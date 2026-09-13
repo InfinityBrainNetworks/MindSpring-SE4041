@@ -22,8 +22,10 @@ import androidx.compose.material.icons.rounded.Save
 import androidx.compose.material.icons.rounded.VolunteerActivism
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,6 +51,8 @@ import com.mindspring.app.ui.components.MsTextField
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.SectionTitle
 import com.mindspring.app.ui.components.TealTopBar
+import com.mindspring.app.ui.preview.PreviewGratitude
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
@@ -75,6 +80,21 @@ class GratitudeViewModel(private val repo: GratitudeRepository) : ViewModel() {
 fun GratitudeScreen(onBack: () -> Unit) {
     val vm = appViewModel { GratitudeViewModel(it.gratitude) }
     val entries by vm.entries.collectAsStateWithLifecycle()
+
+    GratitudeContent(entries = entries, onAdd = vm::add, onDelete = vm::delete, onBack = onBack)
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [GratitudeScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun GratitudeContent(
+    entries: List<GratitudeEntry>?,
+    onAdd: (String) -> Unit,
+    onDelete: (Long) -> Unit,
+    onBack: () -> Unit,
+) {
     val c = MsTheme.colors
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
@@ -111,7 +131,7 @@ fun GratitudeScreen(onBack: () -> Unit) {
                             leadingIcon = Icons.Rounded.Save,
                             enabled = text.isNotBlank(),
                             onClick = {
-                                vm.add(text)
+                                onAdd(text)
                                 text = ""
                                 scope.launch { snackbar.showSnackbar("Entry saved") }
                             },
@@ -149,10 +169,28 @@ fun GratitudeScreen(onBack: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                     if (open) {
-                        GhostButton("Delete entry", onClick = { vm.delete(entry.id) }, color = c.danger, modifier = Modifier.align(Alignment.End))
+                        GhostButton("Delete entry", onClick = { onDelete(entry.id) }, color = c.danger, modifier = Modifier.align(Alignment.End))
                     }
                 }
             }
         }
+    }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Gratitude", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun GratitudePreview() = PreviewScreen {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        GratitudeContent(entries = PreviewGratitude, onAdd = {}, onDelete = {}, onBack = {})
+    }
+}
+
+@Preview(name = "Gratitude · dark", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun GratitudeDarkPreview() = PreviewScreen(dark = true) {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        GratitudeContent(entries = PreviewGratitude, onAdd = {}, onDelete = {}, onBack = {})
     }
 }

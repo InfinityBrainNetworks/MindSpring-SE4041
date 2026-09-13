@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -78,6 +79,8 @@ import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.TimePickerDialog
 import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewToday
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
@@ -145,15 +148,11 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
     val ambient by vm.ambient.collectAsStateWithLifecycle()
     val checkIn by vm.checkIn.collectAsStateWithLifecycle()
     val digest by vm.digest.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
     val context = LocalContext.current
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
     val toast: (String) -> Unit = { msg -> scope.launch { snackbar.showSnackbar(msg) } }
-
-    var dialog by rememberSaveable { mutableStateOf<ProfileDialog?>(null) }
     var pendingImport by rememberSaveable { mutableStateOf<String?>(null) }
-    val name = user?.name.orEmpty()
 
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) vm.export(context, uri, toast)
@@ -169,6 +168,70 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+
+    ProfileContent(
+        user = user,
+        theme = theme,
+        ambient = ambient,
+        checkIn = checkIn,
+        digest = digest,
+        onSetTheme = { vm.setTheme(it) },
+        onSetAmbient = { vm.setAmbient(it) },
+        onRename = { vm.rename(it) },
+        onSetReminders = { a, b ->
+            vm.setReminders(a, b)
+            if (a.enabled || b.enabled) askForNotifications()
+        },
+        onExport = { exportLauncher.launch("mindspring-backup-${LocalDate.now()}.json") },
+        onImport = { importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+        onLogout = { vm.logout(onLoggedOut) },
+        onClearAll = { vm.clearAll { toast("All data cleared") } },
+        onBack = onBack,
+        onOpenAreas = onOpenAreas,
+        onOpenAlerts = onOpenAlerts,
+    )
+
+    pendingImport?.let { uri ->
+        ConfirmDialog(
+            title = "Restore this backup?",
+            message = "Everything currently in your account is replaced by the backup's contents.",
+            confirm = "Restore",
+            destructive = true,
+            onDismiss = { pendingImport = null },
+        ) {
+            pendingImport = null
+            vm.import(context, Uri.parse(uri), toast)
+        }
+    }
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [ProfileScreen] is the wrapper that supplies both, and also owns the system pickers for
+ * backups and the notification permission, which need a running activity.
+ */
+@Composable
+fun ProfileContent(
+    user: User?,
+    theme: ThemeMode,
+    ambient: Boolean,
+    checkIn: ReminderSettings,
+    digest: ReminderSettings,
+    onSetTheme: (ThemeMode) -> Unit,
+    onSetAmbient: (Boolean) -> Unit,
+    onRename: (String) -> Unit,
+    onSetReminders: (checkIn: ReminderSettings, digest: ReminderSettings) -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    onLogout: () -> Unit,
+    onClearAll: () -> Unit,
+    onBack: () -> Unit,
+    onOpenAreas: () -> Unit,
+    onOpenAlerts: () -> Unit,
+) {
+    val c = MsTheme.colors
+    var dialog by rememberSaveable { mutableStateOf<ProfileDialog?>(null) }
+    val name = user?.name.orEmpty()
 
     Column(Modifier.fillMaxSize()) {
         TealTopBar("Profile & Settings", onNavigate = onBack)
@@ -216,7 +279,7 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
                     Spacer(Modifier.width(Dimens.stackMd))
                     Text("Appearance", style = MaterialTheme.typography.bodyLarge, color = c.textPrimary)
                 }
-                SegmentedTabs(ThemeMode.entries, theme, { vm.setTheme(it) }, { it.label })
+                SegmentedTabs(ThemeMode.entries, theme, onSetTheme, { it.label })
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.AutoAwesome, contentDescription = null, tint = c.tealInk)
                     Spacer(Modifier.width(Dimens.stackMd))
@@ -224,17 +287,17 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
                         Text("Ambient motion", style = MaterialTheme.typography.bodyLarge, color = c.textPrimary)
                         Text("The slowly drifting background", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
                     }
-                    Switch(checked = ambient, onCheckedChange = { vm.setAmbient(it) }, colors = msSwitchColors())
+                    Switch(checked = ambient, onCheckedChange = onSetAmbient, colors = msSwitchColors())
                 }
             }
 
             MsCard(Modifier.fillMaxWidth().appear(3), contentPadding = PaddingValues(vertical = 4.dp)) {
                 SettingsRow(Icons.Outlined.CloudUpload, "Export backup", detail = "Save everything to a file") {
-                    exportLauncher.launch("mindspring-backup-${LocalDate.now()}.json")
+                    onExport()
                 }
                 RowDivider()
                 SettingsRow(Icons.Outlined.CloudDownload, "Import backup", detail = "Restore from a backup file") {
-                    importLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+                    onImport()
                 }
                 RowDivider()
                 SettingsRow(Icons.Outlined.Info, "About") { dialog = ProfileDialog.About }
@@ -261,10 +324,9 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
     }
 
     when (dialog) {
-        ProfileDialog.EditName -> EditNameDialog(name, onDismiss = { dialog = null }) { vm.rename(it); dialog = null }
+        ProfileDialog.EditName -> EditNameDialog(name, onDismiss = { dialog = null }) { onRename(it); dialog = null }
         ProfileDialog.Reminders -> RemindersDialog(checkIn, digest, onDismiss = { dialog = null }) { a, b ->
-            vm.setReminders(a, b)
-            if (a.enabled || b.enabled) askForNotifications()
+            onSetReminders(a, b)
             dialog = null
         }
         ProfileDialog.About -> AlertDialog(
@@ -285,7 +347,7 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
             message = "Your data stays on this device. You can sign back in at any time.",
             confirm = "Log out",
             onDismiss = { dialog = null },
-        ) { dialog = null; vm.logout(onLoggedOut) }
+        ) { dialog = null; onLogout() }
         ProfileDialog.Clear -> ConfirmDialog(
             title = "Clear all data?",
             message = "This permanently deletes every habit, task, project, mood check-in and journal entry on this account. Your account and life areas are kept.",
@@ -294,22 +356,9 @@ fun ProfileScreen(onBack: () -> Unit, onOpenAreas: () -> Unit, onOpenAlerts: () 
             onDismiss = { dialog = null },
         ) {
             dialog = null
-            vm.clearAll { toast("All data cleared") }
+            onClearAll()
         }
         null -> Unit
-    }
-
-    pendingImport?.let { uri ->
-        ConfirmDialog(
-            title = "Restore this backup?",
-            message = "Everything currently in your account is replaced by the backup's contents.",
-            confirm = "Restore",
-            destructive = true,
-            onDismiss = { pendingImport = null },
-        ) {
-            pendingImport = null
-            vm.import(context, Uri.parse(uri), toast)
-        }
     }
 }
 
@@ -433,3 +482,25 @@ private fun ConfirmDialog(
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Composable
+private fun ProfilePreviewBody() = ProfileContent(
+    user = User(id = 1, name = "Asan Perera", email = "asan@example.com", memberSince = PreviewToday.minusMonths(6)),
+    theme = ThemeMode.System,
+    ambient = true,
+    checkIn = ReminderSettings(true, LocalTime.of(20, 0)),
+    digest = ReminderSettings(true, LocalTime.of(8, 0)),
+    onSetTheme = {}, onSetAmbient = {}, onRename = {}, onSetReminders = { _, _ -> },
+    onExport = {}, onImport = {}, onLogout = {}, onClearAll = {},
+    onBack = {}, onOpenAreas = {}, onOpenAlerts = {},
+)
+
+@Preview(name = "Profile", showBackground = true, widthDp = 393, heightDp = 1200)
+@Composable
+private fun ProfilePreview() = PreviewScreen { ProfilePreviewBody() }
+
+@Preview(name = "Profile · dark", showBackground = true, widthDp = 393, heightDp = 1200)
+@Composable
+private fun ProfileDarkPreview() = PreviewScreen(dark = true) { ProfilePreviewBody() }

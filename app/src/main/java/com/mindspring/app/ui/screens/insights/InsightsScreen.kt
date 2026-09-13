@@ -51,6 +51,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.ui.appViewModel
@@ -67,11 +68,15 @@ import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.color
 import com.mindspring.app.ui.components.icon
 import com.mindspring.app.domain.HabitStats
+import com.mindspring.app.ui.preview.PreviewInsightsState
+import com.mindspring.app.ui.preview.PreviewMonth
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.CardShape
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.theme.areaColor
 import com.mindspring.app.ui.util.Fmt
+import java.time.YearMonth
 
 @Composable
 fun InsightsScreen(
@@ -85,6 +90,38 @@ fun InsightsScreen(
     val state by vm.state.collectAsStateWithLifecycle()
     val month by vm.month.collectAsStateWithLifecycle()
     val section by vm.section.collectAsStateWithLifecycle()
+
+    InsightsContent(
+        userName = userName,
+        state = state,
+        month = month,
+        section = section,
+        onMonthChange = { vm.month.value = it },
+        onSectionChange = { vm.section.value = it },
+        onOpenHistory = onOpenHistory,
+        onOpenAreas = onOpenAreas,
+        onOpenJournal = onOpenJournal,
+        onOpenProfile = onOpenProfile,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [InsightsScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun InsightsContent(
+    userName: String,
+    state: InsightsState?,
+    month: YearMonth,
+    section: InsightSection,
+    onMonthChange: (YearMonth) -> Unit,
+    onSectionChange: (InsightSection) -> Unit,
+    onOpenHistory: () -> Unit,
+    onOpenAreas: () -> Unit,
+    onOpenJournal: () -> Unit,
+    onOpenProfile: () -> Unit,
+) {
     val c = MsTheme.colors
 
     Column(Modifier.fillMaxSize()) {
@@ -97,8 +134,8 @@ fun InsightsScreen(
                 Text("Your Insights", style = MaterialTheme.typography.headlineSmall, color = c.textPrimary)
                 Text("How your habits, work and mood add up.", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary)
             }
-            MonthSwitcher(month, { vm.month.value = it })
-            SegmentedTabs(InsightSection.entries, section, { vm.section.value = it }, { it.label })
+            MonthSwitcher(month, onMonthChange)
+            SegmentedTabs(InsightSection.entries, section, onSectionChange, { it.label })
             val s = state ?: return@Column
             AnimatedContent(section, transitionSpec = { fadeIn(tween(260)) togetherWith fadeOut(tween(140)) }, label = "insightSection") { sec ->
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.stackMd)) {
@@ -413,3 +450,34 @@ private fun LinkCard(icon: ImageVector, title: String, subtitle: String, onClick
         }
     }
 }
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Composable
+private fun InsightsPreview(dark: Boolean = false, section: InsightSection) = PreviewScreen(dark) {
+    InsightsContent(
+        userName = "Asan", state = PreviewInsightsState, month = PreviewMonth, section = section,
+        onMonthChange = {}, onSectionChange = {}, onOpenHistory = {}, onOpenAreas = {},
+        onOpenJournal = {}, onOpenProfile = {},
+    )
+}
+
+@Preview(name = "Insights · overview", showBackground = true, widthDp = 393, heightDp = 1000)
+@Composable
+private fun InsightsOverviewPreview() = InsightsPreview(section = InsightSection.Overview)
+
+@Preview(name = "Insights · habits", showBackground = true, widthDp = 393, heightDp = 1000)
+@Composable
+private fun InsightsHabitsPreview() = InsightsPreview(section = InsightSection.Habits)
+
+@Preview(name = "Insights · tasks", showBackground = true, widthDp = 393, heightDp = 1000)
+@Composable
+private fun InsightsTasksPreview() = InsightsPreview(section = InsightSection.Tasks)
+
+@Preview(name = "Insights · mind", showBackground = true, widthDp = 393, heightDp = 1000)
+@Composable
+private fun InsightsMindPreview() = InsightsPreview(section = InsightSection.Mind)
+
+@Preview(name = "Insights · overview dark", showBackground = true, widthDp = 393, heightDp = 1000)
+@Composable
+private fun InsightsOverviewDarkPreview() = InsightsPreview(dark = true, section = InsightSection.Overview)

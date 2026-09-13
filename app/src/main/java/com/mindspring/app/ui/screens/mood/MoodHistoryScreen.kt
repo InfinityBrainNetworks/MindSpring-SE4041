@@ -24,12 +24,14 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.MoodEntry
@@ -51,6 +54,8 @@ import com.mindspring.app.ui.components.TagChip
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.color
 import com.mindspring.app.ui.theme.CardShape
+import com.mindspring.app.ui.preview.PreviewMoodHistory
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
@@ -61,6 +66,32 @@ fun MoodHistoryScreen(onBack: () -> Unit, onEdit: (Long) -> Unit) {
     val vm = appViewModel { MoodHistoryViewModel(it.moods) }
     val period by vm.period.collectAsStateWithLifecycle()
     val entries by vm.entries.collectAsStateWithLifecycle()
+
+    MoodHistoryContent(
+        period = period,
+        entries = entries,
+        onPeriodChange = { vm.period.value = it },
+        onDelete = vm::delete,
+        onRestore = vm::restore,
+        onBack = onBack,
+        onEdit = onEdit,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [MoodHistoryScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun MoodHistoryContent(
+    period: Period,
+    entries: List<MoodEntry>?,
+    onPeriodChange: (Period) -> Unit,
+    onDelete: (MoodEntry) -> Unit,
+    onRestore: (MoodEntry) -> Unit,
+    onBack: () -> Unit,
+    onEdit: (Long) -> Unit,
+) {
     val c = MsTheme.colors
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
@@ -72,7 +103,7 @@ fun MoodHistoryScreen(onBack: () -> Unit, onEdit: (Long) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Dimens.stackMd),
         ) {
             item {
-                SegmentedTabs(Period.entries, period, { vm.period.value = it }, { it.label })
+                SegmentedTabs(Period.entries, period, onPeriodChange, { it.label })
                 Spacer(Modifier.height(Dimens.stackSm))
                 Text(
                     "Tap an entry to edit it. Swipe left to delete.",
@@ -91,10 +122,10 @@ fun MoodHistoryScreen(onBack: () -> Unit, onEdit: (Long) -> Unit) {
                     entry = entry,
                     onClick = { onEdit(entry.id) },
                     onDelete = {
-                        vm.delete(entry)
+                        onDelete(entry)
                         scope.launch {
                             val result = snackbar.showSnackbar("Entry deleted", actionLabel = "Undo", duration = SnackbarDuration.Short)
-                            if (result == SnackbarResult.ActionPerformed) vm.restore(entry)
+                            if (result == SnackbarResult.ActionPerformed) onRestore(entry)
                         }
                     },
                     modifier = Modifier.animateItem(),
@@ -156,5 +187,40 @@ private fun MoodEntryCard(entry: MoodEntry, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Mood history", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun MoodHistoryPreview() = PreviewScreen {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        MoodHistoryContent(
+            period = Period.Week, entries = PreviewMoodHistory, onPeriodChange = {},
+            onDelete = {}, onRestore = {}, onBack = {}, onEdit = {},
+        )
+    }
+}
+
+@Preview(name = "Mood history · empty", showBackground = true, widthDp = 393, heightDp = 600)
+@Composable
+private fun MoodHistoryEmptyPreview() = PreviewScreen {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        MoodHistoryContent(
+            period = Period.Week, entries = emptyList(), onPeriodChange = {},
+            onDelete = {}, onRestore = {}, onBack = {}, onEdit = {},
+        )
+    }
+}
+
+@Preview(name = "Mood history · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun MoodHistoryDarkPreview() = PreviewScreen(dark = true) {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        MoodHistoryContent(
+            period = Period.Month, entries = PreviewMoodHistory, onPeriodChange = {},
+            onDelete = {}, onRestore = {}, onBack = {}, onEdit = {},
+        )
     }
 }

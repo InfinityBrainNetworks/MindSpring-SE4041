@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.Lifecycle
@@ -87,6 +88,7 @@ import com.mindspring.app.ui.components.SmallChip
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import kotlinx.coroutines.flow.SharingStarted
@@ -109,9 +111,9 @@ class AlertSettingsViewModel(private val app: AppContainer) : ViewModel() {
 }
 
 /** What the phone allows right now; re-read whenever the screen comes back from Android settings. */
-private data class Access(val notifications: Boolean, val exact: Boolean, val fullScreen: Boolean, val battery: Boolean) {
+data class AlertPermissions(val notifications: Boolean, val exact: Boolean, val fullScreen: Boolean, val battery: Boolean) {
     companion object {
-        fun read(context: Context) = Access(
+        fun read(context: Context) = AlertPermissions(
             notifications = AlertAccess.notificationsAllowed(context),
             exact = AlertAccess.exactAllowed(context),
             fullScreen = AlertAccess.fullScreenAllowed(context),
@@ -125,7 +127,6 @@ private data class Access(val notifications: Boolean, val exact: Boolean, val fu
 fun AlertSettingsScreen(onBack: () -> Unit) {
     val vm = appViewModel { AlertSettingsViewModel(it) }
     val sounds by vm.sounds.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
     val context = LocalContext.current
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
@@ -133,7 +134,7 @@ fun AlertSettingsScreen(onBack: () -> Unit) {
 
     var refresh by remember { mutableIntStateOf(0) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
-    val access = remember(refresh) { Access.read(context) }
+    val access = remember(refresh) { AlertPermissions.read(context) }
 
     val open: (Intent) -> Unit = { intent ->
         try {
@@ -169,6 +170,47 @@ fun AlertSettingsScreen(onBack: () -> Unit) {
         }
     }
 
+    AlertSettingsContent(
+        sounds = sounds,
+        access = access,
+        onTry = tryIt,
+        onPickReminderTone = { reminderPicker.launch(sounds?.reminderTone) },
+        onPickAlarmTone = { alarmPicker.launch(sounds?.alarmTone) },
+        onVibrate = vm::setVibrate,
+        onSnooze = vm::setSnooze,
+        onAllowNotifications = allowNotifications,
+        onOpenSoundSettings = { open(AlertAccess.notificationSettings(context)) },
+        onOpenExactSettings = { open(AlertAccess.exactSettings(context)) },
+        onOpenFullScreenSettings = { open(AlertAccess.fullScreenSettings(context)) },
+        onOpenBatterySettings = { open(batteryIntent(context)) },
+        onBack = onBack,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [AlertSettingsScreen] is the wrapper that supplies both, and owns the tone pickers, the
+ * permission request and the jumps into Android settings, which need a running activity.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun AlertSettingsContent(
+    sounds: AlertSounds?,
+    access: AlertPermissions,
+    onTry: (AlertStyle) -> Unit,
+    onPickReminderTone: () -> Unit,
+    onPickAlarmTone: () -> Unit,
+    onVibrate: (Boolean) -> Unit,
+    onSnooze: (Int) -> Unit,
+    onAllowNotifications: () -> Unit,
+    onOpenSoundSettings: () -> Unit,
+    onOpenExactSettings: () -> Unit,
+    onOpenFullScreenSettings: () -> Unit,
+    onOpenBatterySettings: () -> Unit,
+    onBack: () -> Unit,
+) {
+    val c = MsTheme.colors
+
     Column(Modifier.fillMaxSize()) {
         TealTopBar("Alerts & Sounds", onNavigate = onBack)
         Column(
@@ -182,22 +224,22 @@ fun AlertSettingsScreen(onBack: () -> Unit) {
                 modifier = Modifier.appear(0),
             )
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).appear(1), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                StyleTile(AlertStyle.Reminder, Icons.Rounded.NotificationsActive, Modifier.weight(1f)) { tryIt(AlertStyle.Reminder) }
-                StyleTile(AlertStyle.Alarm, Icons.Rounded.Alarm, Modifier.weight(1f)) { tryIt(AlertStyle.Alarm) }
+                StyleTile(AlertStyle.Reminder, Icons.Rounded.NotificationsActive, Modifier.weight(1f)) { onTry(AlertStyle.Reminder) }
+                StyleTile(AlertStyle.Alarm, Icons.Rounded.Alarm, Modifier.weight(1f)) { onTry(AlertStyle.Alarm) }
             }
 
             GroupHeader("Sounds")
             MsCard(Modifier.fillMaxWidth().appear(2), contentPadding = PaddingValues(vertical = 4.dp)) {
                 val s = sounds
-                ToneRow(Icons.Outlined.MusicNote, "Reminder tone", "Reminders and daily nudges", s?.reminderTone) { reminderPicker.launch(s?.reminderTone) }
+                ToneRow(Icons.Outlined.MusicNote, "Reminder tone", "Reminders and daily nudges", s?.reminderTone, onPickReminderTone)
                 Divider()
-                ToneRow(Icons.Rounded.Alarm, "Alarm tone", "Alarms on tasks and habits", s?.alarmTone) { alarmPicker.launch(s?.alarmTone) }
+                ToneRow(Icons.Rounded.Alarm, "Alarm tone", "Alarms on tasks and habits", s?.alarmTone, onPickAlarmTone)
                 Divider()
                 Row(Modifier.fillMaxWidth().padding(horizontal = Dimens.card, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.Vibration, contentDescription = null, tint = c.tealInk)
                     Spacer(Modifier.width(Dimens.stackMd))
                     Text("Vibrate", style = MaterialTheme.typography.bodyLarge, color = c.textPrimary, modifier = Modifier.weight(1f))
-                    Switch(checked = s?.vibrate ?: true, onCheckedChange = vm::setVibrate, colors = msSwitchColors())
+                    Switch(checked = s?.vibrate ?: true, onCheckedChange = onVibrate, colors = msSwitchColors())
                 }
                 Divider()
                 Column(Modifier.fillMaxWidth().padding(horizontal = Dimens.card, vertical = 14.dp)) {
@@ -208,28 +250,28 @@ fun AlertSettingsScreen(onBack: () -> Unit) {
                     }
                     FlowRow(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         AlertSounds.SnoozeChoices.forEach { m ->
-                            SmallChip("$m min", selected = s?.snoozeMinutes == m, onClick = { vm.setSnooze(m) })
+                            SmallChip("$m min", selected = s?.snoozeMinutes == m, onClick = { onSnooze(m) })
                         }
                     }
                 }
                 Divider()
-                LinkRow(Icons.Outlined.Tune, "More sound options", "Volume, lock screen and Do Not Disturb") { open(AlertAccess.notificationSettings(context)) }
+                LinkRow(Icons.Outlined.Tune, "More sound options", "Volume, lock screen and Do Not Disturb", onOpenSoundSettings)
             }
 
             GroupHeader("Permissions")
             MsCard(Modifier.fillMaxWidth().appear(3), contentPadding = PaddingValues(vertical = 4.dp)) {
-                AccessRow(Icons.Outlined.Notifications, "Notifications", "Needed for every reminder and alarm", access.notifications, onFix = allowNotifications)
+                AccessRow(Icons.Outlined.Notifications, "Notifications", "Needed for every reminder and alarm", access.notifications, onFix = onAllowNotifications)
                 Divider()
                 AccessRow(Icons.Outlined.Schedule, "On-time alerts", "Ring at the exact minute, not a little later", access.exact) {
-                    open(AlertAccess.exactSettings(context))
+                    onOpenExactSettings()
                 }
                 Divider()
                 AccessRow(Icons.Outlined.LockClock, "Lock screen alerts", "Let alerts wake the phone and fill the lock screen", access.fullScreen) {
-                    open(AlertAccess.fullScreenSettings(context))
+                    onOpenFullScreenSettings()
                 }
                 Divider()
                 AccessRow(Icons.Outlined.BatteryChargingFull, "Run in the background", "Recommended on phones that close apps to save battery", access.battery, optional = true) {
-                    open(batteryIntent(context))
+                    onOpenBatterySettings()
                 }
             }
 
@@ -352,4 +394,33 @@ private class PickTone(private val type: Int, private val title: String) : Activ
         if (resultCode != Activity.RESULT_OK || intent == null) return null
         return PickedTone(IntentCompat.getParcelableExtra(intent, RingtoneManager.EXTRA_RINGTONE_PICKED_URI, Uri::class.java)?.toString())
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Composable
+private fun AlertSettingsPreviewBody(access: AlertPermissions) = AlertSettingsContent(
+    sounds = AlertSounds(reminderTone = null, alarmTone = null, vibrate = true, snoozeMinutes = 10),
+    access = access,
+    onTry = {}, onPickReminderTone = {}, onPickAlarmTone = {}, onVibrate = {}, onSnooze = {},
+    onAllowNotifications = {}, onOpenSoundSettings = {}, onOpenExactSettings = {},
+    onOpenFullScreenSettings = {}, onOpenBatterySettings = {}, onBack = {},
+)
+
+@Preview(name = "Alert settings", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun AlertSettingsPreview() = PreviewScreen {
+    AlertSettingsPreviewBody(AlertPermissions(notifications = true, exact = true, fullScreen = true, battery = true))
+}
+
+@Preview(name = "Alert settings · permissions missing", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun AlertSettingsMissingPreview() = PreviewScreen {
+    AlertSettingsPreviewBody(AlertPermissions(notifications = false, exact = false, fullScreen = true, battery = false))
+}
+
+@Preview(name = "Alert settings · dark", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun AlertSettingsDarkPreview() = PreviewScreen(dark = true) {
+    AlertSettingsPreviewBody(AlertPermissions(notifications = true, exact = true, fullScreen = true, battery = true))
 }

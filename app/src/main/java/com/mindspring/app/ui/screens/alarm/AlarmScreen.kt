@@ -53,15 +53,19 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.reminders.AlertInfo
 import com.mindspring.app.reminders.AlertKind
+import com.mindspring.app.reminders.AlertTarget
 import com.mindspring.app.ui.components.AmbientBackground
 import com.mindspring.app.ui.components.GhostButton
 import com.mindspring.app.ui.components.OutlinePillButton
 import com.mindspring.app.ui.components.PrimaryButton
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewToday
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.LocalAmbientMotion
 import com.mindspring.app.ui.theme.MsTheme
@@ -237,4 +241,35 @@ private fun SwipeToDismiss(onDismiss: () -> Unit) {
         }
         Text("Swipe to dismiss", style = MaterialTheme.typography.labelMedium, color = c.textSecondary)
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+private val previewAlert = AlertInfo(
+    target = AlertTarget(AlertKind.Task, 5),
+    title = "Submit the final APK",
+    detail = "Due today · Mobile App Assignment",
+    style = AlertStyle.Alarm,
+    at = PreviewToday.atTime(19, 30),
+)
+
+@Preview(name = "Alarm", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun AlarmScreenPreview() = PreviewScreen {
+    AlarmScreen(previewAlert, snoozeMinutes = 10, onDone = {}, onSnooze = {}, onStop = {}, onOpen = {}, now = PreviewToday.atTime(19, 30))
+}
+
+@Preview(name = "Alarm · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun AlarmScreenDarkPreview() = PreviewScreen(dark = true) {
+    AlarmScreen(previewAlert, snoozeMinutes = 10, onDone = {}, onSnooze = {}, onStop = {}, onOpen = {}, now = PreviewToday.atTime(19, 30))
+}
+
+@Preview(name = "Reminder on lock screen", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun ReminderScreenPreview() = PreviewScreen {
+    AlarmScreen(
+        previewAlert.copy(style = AlertStyle.Reminder, title = "Room database and repositories", detail = "Due tomorrow · Mobile App Assignment"),
+        snoozeMinutes = 10, onDone = {}, onSnooze = {}, onStop = {}, onOpen = {}, now = PreviewToday.atTime(9, 0),
+    )
 }

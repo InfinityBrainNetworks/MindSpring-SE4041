@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.Mood
@@ -69,6 +70,9 @@ import com.mindspring.app.ui.components.Tint
 import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.color
 import com.mindspring.app.ui.components.icon
+import com.mindspring.app.ui.preview.PreviewJournalListState
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewToday
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsColors
 import com.mindspring.app.ui.theme.MsTheme
@@ -86,6 +90,16 @@ private fun JournalStatus.tint(c: MsColors): Tint = when (this) {
 fun JournalListScreen(onBack: () -> Unit, onOpenDay: (LocalDate) -> Unit) {
     val vm = appViewModel { JournalListViewModel(it) }
     val s by vm.state.collectAsStateWithLifecycle()
+
+    JournalListContent(s = s, onBack = onBack, onOpenDay = onOpenDay)
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [JournalListScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun JournalListContent(s: JournalListState, onBack: () -> Unit, onOpenDay: (LocalDate) -> Unit) {
     val c = MsTheme.colors
 
     Column(Modifier.fillMaxSize()) {
@@ -184,9 +198,41 @@ private fun DayRow(date: LocalDate, words: Int, rating: Int?, text: String, modi
 fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
     val vm = appViewModel(key = "journal-$date") { JournalEditorViewModel(it, date) }
     val s by vm.state.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
 
     LaunchedEffect(s.saved) { if (s.saved) onDone() }
+
+    JournalEntryContent(
+        date = date,
+        s = s,
+        onRating = vm::onRating,
+        onEnergy = vm::onEnergy,
+        onHighlight = vm::onHighlight,
+        onMonologue = vm::onMonologue,
+        onTomorrow = vm::onTomorrow,
+        onAddTomorrowAsTask = vm::addTomorrowAsTask,
+        onSave = vm::save,
+        onDone = onDone,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [JournalEntryScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun JournalEntryContent(
+    date: LocalDate,
+    s: JournalEditorState,
+    onRating: (Int) -> Unit,
+    onEnergy: (Int) -> Unit,
+    onHighlight: (String) -> Unit,
+    onMonologue: (String) -> Unit,
+    onTomorrow: (String) -> Unit,
+    onAddTomorrowAsTask: () -> Unit,
+    onSave: () -> Unit,
+    onDone: () -> Unit,
+) {
+    val c = MsTheme.colors
 
     Column(Modifier.fillMaxSize()) {
         TealTopBar(if (date == LocalDate.now()) "Tonight's Reflection" else Fmt.shortDay(date), onNavigate = onDone)
@@ -199,20 +245,20 @@ fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
             Column {
                 FieldLabel("How was the day?")
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Mood.entries.forEach { m -> MoodFaceButton(m, selected = s.rating == m.rating, onClick = { vm.onRating(m.rating) }, size = 52.dp) }
+                    Mood.entries.forEach { m -> MoodFaceButton(m, selected = s.rating == m.rating, onClick = { onRating(m.rating) }, size = 52.dp) }
                 }
             }
 
             Column {
                 FieldLabel("Energy")
-                EnergyBar(s.energy, vm::onEnergy)
+                EnergyBar(s.energy, onEnergy)
             }
 
             Column {
                 FieldLabel("Highlight of the day")
                 MsTextField(
                     value = s.highlight,
-                    onValueChange = vm::onHighlight,
+                    onValueChange = onHighlight,
                     placeholder = "The best part, in a line",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
@@ -222,7 +268,7 @@ fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
                 FieldLabel("Monologue")
                 MsTextField(
                     value = s.monologue,
-                    onValueChange = vm::onMonologue,
+                    onValueChange = onMonologue,
                     placeholder = "What happened, how it felt, what you noticed. No one else reads this.",
                     singleLine = false,
                     minLines = 8,
@@ -236,7 +282,7 @@ fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
                 FieldLabel("Tomorrow's #1")
                 MsTextField(
                     value = s.tomorrowTop,
-                    onValueChange = vm::onTomorrow,
+                    onValueChange = onTomorrow,
                     placeholder = "The one thing that would make tomorrow a win",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
@@ -245,7 +291,7 @@ fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
                     OutlinePillButton(
                         if (s.taskAdded) "Added to tomorrow's tasks" else "Add as a task for tomorrow",
                         leadingIcon = if (s.taskAdded) Icons.Rounded.CheckCircle else Icons.Rounded.AddTask,
-                        onClick = vm::addTomorrowAsTask,
+                        onClick = onAddTomorrowAsTask,
                         contentColor = c.tealInk,
                         borderColor = c.tealInk.copy(alpha = 0.4f),
                     )
@@ -254,7 +300,7 @@ fun JournalEntryScreen(date: LocalDate, onDone: () -> Unit) {
         }
         PrimaryButton(
             "Save Reflection",
-            onClick = vm::save,
+            onClick = onSave,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
         )
     }
@@ -317,5 +363,48 @@ private fun WordMeter(words: Int) {
         style = MaterialTheme.typography.labelSmall,
         color = c.textTertiary,
         modifier = Modifier.padding(top = 4.dp),
+    )
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Journal list", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun JournalListPreview() = PreviewScreen {
+    JournalListContent(s = PreviewJournalListState, onBack = {}, onOpenDay = {})
+}
+
+@Preview(name = "Journal list · dark", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun JournalListDarkPreview() = PreviewScreen(dark = true) {
+    JournalListContent(s = PreviewJournalListState, onBack = {}, onOpenDay = {})
+}
+
+private val previewJournalEditor = JournalEditorState(
+    date = PreviewToday,
+    rating = 4,
+    energy = 3,
+    highlight = "Finally cracked the methodology outline.",
+    monologue = "A slow start, then two solid hours on the proposal. The run helped more than the " +
+        "coffee did. Tomorrow I want to get the sampling section down before lunch.",
+    tomorrowTop = "Sampling section, before lunch",
+    exists = true,
+)
+
+@Preview(name = "Journal entry", showBackground = true, widthDp = 393, heightDp = 1100)
+@Composable
+private fun JournalEntryPreview() = PreviewScreen {
+    JournalEntryContent(
+        date = PreviewToday, s = previewJournalEditor, onRating = {}, onEnergy = {}, onHighlight = {},
+        onMonologue = {}, onTomorrow = {}, onAddTomorrowAsTask = {}, onSave = {}, onDone = {},
+    )
+}
+
+@Preview(name = "Journal entry · blank", showBackground = true, widthDp = 393, heightDp = 1100)
+@Composable
+private fun JournalEntryBlankPreview() = PreviewScreen {
+    JournalEntryContent(
+        date = PreviewToday, s = JournalEditorState(date = PreviewToday), onRating = {}, onEnergy = {},
+        onHighlight = {}, onMonologue = {}, onTomorrow = {}, onAddTomorrowAsTask = {}, onSave = {}, onDone = {},
     )
 }

@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mindspring.app.ui.components.BrandTopBar
 import com.mindspring.app.ui.components.IconCircle
@@ -52,6 +53,7 @@ import com.mindspring.app.ui.components.MsCard
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.SectionTitle
 import com.mindspring.app.ui.components.appear
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 
@@ -179,3 +181,17 @@ private fun BreathingArt(modifier: Modifier) {
 
 const val TECHNIQUE_CALM = "calm"
 const val TECHNIQUE_BOX = "box"
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Mind", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun CalmScreenPreview() = PreviewScreen {
+    CalmScreen("Asan", onBreathing = {}, onGratitude = {}, onJournal = {}, onMoodHistory = {}, onOpenProfile = {})
+}
+
+@Preview(name = "Mind · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun CalmScreenDarkPreview() = PreviewScreen(dark = true) {
+    CalmScreen("Asan", onBreathing = {}, onGratitude = {}, onJournal = {}, onMoodHistory = {}, onOpenProfile = {})
+}

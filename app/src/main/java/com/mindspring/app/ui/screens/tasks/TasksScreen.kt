@@ -46,8 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.data.model.Task
 import com.mindspring.app.domain.TaskGroup
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.BrandTopBar
@@ -60,6 +62,8 @@ import com.mindspring.app.ui.components.SegmentedTabs
 import com.mindspring.app.ui.components.TaskRow
 import com.mindspring.app.ui.components.Tint
 import com.mindspring.app.ui.components.appear
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewTasksState
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.theme.areaColor
@@ -78,6 +82,42 @@ fun TasksScreen(
     val s by vm.state.collectAsStateWithLifecycle()
     val view by vm.view.collectAsStateWithLifecycle()
     val filter by vm.filter.collectAsStateWithLifecycle()
+
+    TasksContent(
+        userName = userName,
+        s = s,
+        view = view,
+        filter = filter,
+        onViewChange = { vm.view.value = it },
+        onFilterChange = { vm.filter.value = it },
+        onToggleTask = vm::toggle,
+        onOpenTask = onOpenTask,
+        onAddTask = onAddTask,
+        onOpenProject = onOpenProject,
+        onAddProject = onAddProject,
+        onOpenProfile = onOpenProfile,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [TasksScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun TasksContent(
+    userName: String,
+    s: TasksState,
+    view: TasksView,
+    filter: TaskFilter,
+    onViewChange: (TasksView) -> Unit,
+    onFilterChange: (TaskFilter) -> Unit,
+    onToggleTask: (Task) -> Unit,
+    onOpenTask: (Long) -> Unit,
+    onAddTask: () -> Unit,
+    onOpenProject: (Long) -> Unit,
+    onAddProject: () -> Unit,
+    onOpenProfile: () -> Unit,
+) {
     val c = MsTheme.colors
 
     Box(Modifier.fillMaxSize()) {
@@ -91,7 +131,7 @@ fun TasksScreen(
                     color = c.textSecondary,
                 )
                 Spacer(Modifier.height(12.dp))
-                SegmentedTabs(TasksView.entries, view, { vm.view.value = it }, { it.label })
+                SegmentedTabs(TasksView.entries, view, onViewChange, { it.label })
             }
             AnimatedContent(
                 targetState = view,
@@ -103,7 +143,7 @@ fun TasksScreen(
                 modifier = Modifier.weight(1f),
             ) { v ->
                 when (v) {
-                    TasksView.Tasks -> TaskList(s, filter, vm, onOpenTask)
+                    TasksView.Tasks -> TaskList(s, filter, onFilterChange, onToggleTask, onOpenTask)
                     TasksView.Projects -> ProjectList(s, onOpenProject)
                 }
             }
@@ -122,7 +162,13 @@ fun TasksScreen(
 }
 
 @Composable
-private fun TaskList(s: TasksState, filter: TaskFilter, vm: TasksViewModel, onOpenTask: (Long) -> Unit) {
+private fun TaskList(
+    s: TasksState,
+    filter: TaskFilter,
+    onFilterChange: (TaskFilter) -> Unit,
+    onToggleTask: (Task) -> Unit,
+    onOpenTask: (Long) -> Unit,
+) {
     val c = MsTheme.colors
     Column(Modifier.fillMaxSize()) {
         Row(
@@ -130,7 +176,7 @@ private fun TaskList(s: TasksState, filter: TaskFilter, vm: TasksViewModel, onOp
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             TaskFilter.entries.forEach { f ->
-                FilterChip(f, s.counts[f] ?: 0, selected = f == filter) { vm.filter.value = f }
+                FilterChip(f, s.counts[f] ?: 0, selected = f == filter) { onFilterChange(f) }
             }
         }
         if (s.loaded && s.sections.isEmpty()) {
@@ -164,7 +210,7 @@ private fun TaskList(s: TasksState, filter: TaskFilter, vm: TasksViewModel, onOp
                             task = line.task,
                             flag = line.flag,
                             projectName = line.projectName,
-                            onToggle = { vm.toggle(line.task) },
+                            onToggle = { onToggleTask(line.task) },
                             onClick = { onOpenTask(line.task.id) },
                         )
                     }
@@ -275,4 +321,36 @@ fun ProjectCardView(card: ProjectCard, modifier: Modifier = Modifier, onClick: (
             }
         }
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Tasks", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun TasksScreenPreview() = PreviewScreen {
+    TasksContent(
+        userName = "Asan", s = PreviewTasksState, view = TasksView.Tasks, filter = TaskFilter.Open,
+        onViewChange = {}, onFilterChange = {}, onToggleTask = {}, onOpenTask = {}, onAddTask = {},
+        onOpenProject = {}, onAddProject = {}, onOpenProfile = {},
+    )
+}
+
+@Preview(name = "Tasks · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun TasksScreenDarkPreview() = PreviewScreen(dark = true) {
+    TasksContent(
+        userName = "Asan", s = PreviewTasksState, view = TasksView.Tasks, filter = TaskFilter.Open,
+        onViewChange = {}, onFilterChange = {}, onToggleTask = {}, onOpenTask = {}, onAddTask = {},
+        onOpenProject = {}, onAddProject = {}, onOpenProfile = {},
+    )
+}
+
+@Preview(name = "Projects", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun ProjectsViewPreview() = PreviewScreen {
+    TasksContent(
+        userName = "Asan", s = PreviewTasksState, view = TasksView.Projects, filter = TaskFilter.Open,
+        onViewChange = {}, onFilterChange = {}, onToggleTask = {}, onOpenTask = {}, onAddTask = {},
+        onOpenProject = {}, onAddProject = {}, onOpenProfile = {},
+    )
 }

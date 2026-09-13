@@ -43,11 +43,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.AlertStyle
 import com.mindspring.app.data.model.HabitFrequency
 import com.mindspring.app.data.model.HabitIcon
+import com.mindspring.app.data.model.LifeArea
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.AlertStylePicker
 import com.mindspring.app.ui.components.AreaChooser
@@ -64,6 +66,8 @@ import com.mindspring.app.ui.components.msSwitchColors
 import com.mindspring.app.ui.components.rememberAskForNotifications
 import com.mindspring.app.ui.components.tint
 import com.mindspring.app.ui.components.vector
+import com.mindspring.app.ui.preview.PreviewAreas
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.util.Fmt
@@ -76,11 +80,28 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
     val s by vm.state.collectAsStateWithLifecycle()
     val areas by vm.areas.collectAsStateWithLifecycle()
     val subAreas by vm.subAreas.collectAsStateWithLifecycle()
+
+    LaunchedEffect(s.saved) { if (s.saved) onDone() }
+
+    HabitEditorContent(s, areas, subAreas, vm, onDone)
+}
+
+/**
+ * The screen as pure state plus an actions object, so it renders in a @Preview without a ViewModel
+ * behind it. [HabitEditorScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun HabitEditorContent(
+    s: HabitEditorState,
+    areas: List<LifeArea>,
+    subAreas: List<String>,
+    actions: HabitEditorActions,
+    onDone: () -> Unit,
+) {
     val c = MsTheme.colors
     var pickTime by rememberSaveable { mutableStateOf(false) }
     val askForNotifications = rememberAskForNotifications()
-
-    LaunchedEffect(s.saved) { if (s.saved) onDone() }
 
     Column(Modifier.fillMaxSize()) {
         TealTopBar(
@@ -100,7 +121,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                 FieldLabel("Habit")
                 MsTextField(
                     value = s.name,
-                    onValueChange = vm::onName,
+                    onValueChange = actions::onName,
                     placeholder = "e.g. Drink 2.5 L water",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 )
@@ -111,7 +132,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     HabitFrequency.entries.forEach { f ->
                         val t = f.tint(c)
-                        SelectChip(f.label, selected = f == s.frequency, onClick = { vm.onFrequency(f) }, selectedColor = t.ink, selectedContent = if (c.isDark) Color(0xFF10201D) else Color.White)
+                        SelectChip(f.label, selected = f == s.frequency, onClick = { actions.onFrequency(f) }, selectedColor = t.ink, selectedContent = if (c.isDark) Color(0xFF10201D) else Color.White)
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -138,7 +159,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                                 DayToggle(
                                     letter = day.name.take(1),
                                     selected = day in s.customDays,
-                                    onClick = { vm.onToggleDay(day) },
+                                    onClick = { actions.onToggleDay(day) },
                                     modifier = Modifier.weight(1f, fill = false).size(40.dp).aspectRatio(1f),
                                 )
                             }
@@ -149,7 +170,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
 
             Column {
                 FieldLabel("Target (optional)")
-                MsTextField(value = s.target, onValueChange = vm::onTarget, placeholder = "e.g. 8k steps, 20 min, 3 lines")
+                MsTextField(value = s.target, onValueChange = actions::onTarget, placeholder = "e.g. 8k steps, 20 min, 3 lines")
             }
 
             Column {
@@ -179,13 +200,13 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                             checked = s.reminderEnabled,
                             onCheckedChange = { on ->
                                 if (on) askForNotifications()
-                                vm.onReminderEnabled(on)
+                                actions.onReminderEnabled(on)
                             },
                             colors = msSwitchColors(),
                         )
                     }
                     AnimatedVisibility(s.reminderEnabled) {
-                        AlertStylePicker(s.reminderStyle, vm::onReminderStyle, Modifier.padding(top = 14.dp))
+                        AlertStylePicker(s.reminderStyle, actions::onReminderStyle, Modifier.padding(top = 14.dp))
                     }
                 }
                 if (s.reminderEnabled) {
@@ -200,12 +221,12 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
 
             Column {
                 FieldLabel("Life area")
-                AreaChooser(areas, s.areaId, vm::onArea)
+                AreaChooser(areas, s.areaId, actions::onArea)
             }
 
             Column {
                 FieldLabel("Sub-area (optional)")
-                SuggestionField(s.subArea, vm::onSubArea, subAreas, placeholder = "e.g. Physical Health")
+                SuggestionField(s.subArea, actions::onSubArea, subAreas, placeholder = "e.g. Physical Health")
             }
 
             Column {
@@ -217,7 +238,7 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                                 val selected = icon == s.icon
                                 val bg by animateColorAsState(if (selected) c.teal else Color.Transparent, label = "iconBg")
                                 Box(
-                                    Modifier.size(44.dp).clip(CircleShape).background(bg).clickable { vm.onIcon(icon) },
+                                    Modifier.size(44.dp).clip(CircleShape).background(bg).clickable { actions.onIcon(icon) },
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(icon.vector, contentDescription = icon.name, tint = if (selected) c.onTeal else c.tealInk)
@@ -240,14 +261,14 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
                                 color = c.textTertiary,
                             )
                         }
-                        Switch(checked = s.active, onCheckedChange = vm::onActive, colors = msSwitchColors())
+                        Switch(checked = s.active, onCheckedChange = actions::onActive, colors = msSwitchColors())
                     }
                 }
             }
         }
         PrimaryButton(
             text = if (s.isEditing) "Save Changes" else "Save Habit",
-            onClick = vm::save,
+            onClick = actions::save,
             enabled = s.canSave,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
         )
@@ -255,8 +276,50 @@ fun HabitEditorScreen(habitId: Long?, onDone: () -> Unit) {
 
     if (pickTime) {
         TimePickerDialog(initial = s.reminderTime, onDismiss = { pickTime = false }) {
-            vm.onReminderTime(it)
+            actions.onReminderTime(it)
             pickTime = false
         }
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+private val previewHabitEditor = HabitEditorState(
+    id = 2,
+    name = "Morning run",
+    areaId = 1,
+    subArea = "Fitness",
+    icon = HabitIcon.Run,
+    frequency = HabitFrequency.Custom,
+    customDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+    target = "5 km",
+    reminderEnabled = true,
+    reminderTime = java.time.LocalTime.of(6, 30),
+)
+
+@Preview(name = "Habit editor", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun HabitEditorPreview() = PreviewScreen {
+    HabitEditorContent(
+        s = previewHabitEditor, areas = PreviewAreas, subAreas = listOf("Fitness", "Sleep"),
+        actions = HabitEditorActions.None, onDone = {},
+    )
+}
+
+@Preview(name = "Habit editor · new habit", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun HabitEditorNewPreview() = PreviewScreen {
+    HabitEditorContent(
+        s = HabitEditorState(), areas = PreviewAreas, subAreas = emptyList(),
+        actions = HabitEditorActions.None, onDone = {},
+    )
+}
+
+@Preview(name = "Habit editor · dark", showBackground = true, widthDp = 393, heightDp = 1300)
+@Composable
+private fun HabitEditorDarkPreview() = PreviewScreen(dark = true) {
+    HabitEditorContent(
+        s = previewHabitEditor, areas = PreviewAreas, subAreas = listOf("Fitness", "Sleep"),
+        actions = HabitEditorActions.None, onDone = {},
+    )
 }

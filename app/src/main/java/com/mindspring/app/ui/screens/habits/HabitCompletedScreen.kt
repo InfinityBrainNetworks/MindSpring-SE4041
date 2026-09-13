@@ -47,11 +47,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.domain.HabitUnit
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.PrimaryButton
 import com.mindspring.app.ui.components.softShadow
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 
@@ -60,6 +63,16 @@ import com.mindspring.app.ui.theme.MsTheme
 fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
     val vm = appViewModel { HabitCompletedViewModel(it, habitId) }
     val s by vm.state.collectAsStateWithLifecycle()
+
+    HabitCompletedContent(s = s, onDone = onDone)
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [HabitCompletedScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun HabitCompletedContent(s: CompletedState?, onDone: () -> Unit) {
     val c = MsTheme.colors
 
     val pop = remember { Animatable(0.3f) }
@@ -159,4 +172,24 @@ fun HabitCompletedScreen(habitId: Long, onDone: () -> Unit) {
             }
         }
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Habit completed", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitCompletedPreview() = PreviewScreen {
+    HabitCompletedContent(
+        s = CompletedState(userFirstName = "Asan", habitName = "Morning run", streak = 12, unit = HabitUnit.Day),
+        onDone = {},
+    )
+}
+
+@Preview(name = "Habit completed · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitCompletedDarkPreview() = PreviewScreen(dark = true) {
+    HabitCompletedContent(
+        s = CompletedState(userFirstName = "Asan", habitName = "Meditate", streak = 3, unit = HabitUnit.Week),
+        onDone = {},
+    )
 }

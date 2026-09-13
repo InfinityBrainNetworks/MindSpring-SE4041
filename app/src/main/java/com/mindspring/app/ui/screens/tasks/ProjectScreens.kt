@@ -44,8 +44,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mindspring.app.data.model.LifeArea
+import com.mindspring.app.data.model.Task
+import com.mindspring.app.domain.TaskFlag
 import com.mindspring.app.ui.appViewModel
 import com.mindspring.app.ui.components.AnimatedCount
 import com.mindspring.app.ui.components.AreaChooser
@@ -63,6 +67,13 @@ import com.mindspring.app.ui.components.TaskRow
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.preview.PreviewAreas
+import com.mindspring.app.ui.preview.PreviewProjectCards
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewTaskLines
+import com.mindspring.app.ui.preview.PreviewTasks
+import com.mindspring.app.ui.preview.PreviewToday
+import com.mindspring.app.ui.screens.home.TaskLine
 import com.mindspring.app.ui.theme.AreaPalette
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
@@ -79,6 +90,34 @@ fun ProjectDetailScreen(
 ) {
     val vm = appViewModel { ProjectDetailViewModel(it, projectId) }
     val state by vm.state.collectAsStateWithLifecycle()
+
+    ProjectDetailContent(
+        state = state,
+        onToggleTask = vm::toggle,
+        onSetArchived = vm::setArchived,
+        onDelete = vm::delete,
+        onBack = onBack,
+        onEdit = onEdit,
+        onOpenTask = onOpenTask,
+        onAddTask = onAddTask,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [ProjectDetailScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun ProjectDetailContent(
+    state: ProjectDetailState?,
+    onToggleTask: (Task) -> Unit,
+    onSetArchived: (Boolean) -> Unit,
+    onDelete: (then: () -> Unit) -> Unit,
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onOpenTask: (Long) -> Unit,
+    onAddTask: () -> Unit,
+) {
     val c = MsTheme.colors
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
@@ -134,19 +173,19 @@ fun ProjectDetailScreen(
                 if (s.open.isEmpty()) {
                     Text("Nothing open.", style = MaterialTheme.typography.bodyMedium, color = c.textSecondary, modifier = Modifier.padding(8.dp))
                 }
-                s.open.forEach { line -> TaskRow(line.task, line.flag, onToggle = { vm.toggle(line.task) }, onClick = { onOpenTask(line.task.id) }) }
+                s.open.forEach { line -> TaskRow(line.task, line.flag, onToggle = { onToggleTask(line.task) }, onClick = { onOpenTask(line.task.id) }) }
                 SecondaryButton("Add a task", onClick = onAddTask, leadingIcon = Icons.Rounded.Add, modifier = Modifier.padding(8.dp))
             }
 
             if (s.finished.isNotEmpty()) {
                 MsCard(Modifier.fillMaxWidth().appear(2), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp)) {
                     GroupHeader("Finished", s.finished.size, modifier = Modifier.padding(horizontal = 8.dp))
-                    s.finished.forEach { line -> TaskRow(line.task, line.flag, onToggle = { vm.toggle(line.task) }, onClick = { onOpenTask(line.task.id) }) }
+                    s.finished.forEach { line -> TaskRow(line.task, line.flag, onToggle = { onToggleTask(line.task) }, onClick = { onOpenTask(line.task.id) }) }
                 }
             }
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                GhostButton(if (s.project.archived) "Unarchive" else "Archive project", onClick = { vm.setArchived(!s.project.archived) })
+                GhostButton(if (s.project.archived) "Unarchive" else "Archive project", onClick = { onSetArchived(!s.project.archived) })
                 GhostButton("Delete project", onClick = { confirmDelete = true }, color = c.danger)
             }
             Spacer(Modifier.height(Dimens.stackMd))
@@ -158,7 +197,7 @@ fun ProjectDetailScreen(
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete this project?") },
             text = { Text("Its tasks are kept as standalone tasks. Archive it instead to hide it but keep the grouping.") },
-            confirmButton = { TextButton(onClick = { confirmDelete = false; vm.delete(onBack) }) { Text("Delete", color = c.danger) } },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; onDelete(onBack) }) { Text("Delete", color = c.danger) } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
     }
@@ -179,9 +218,43 @@ fun ProjectEditorScreen(projectId: Long?, onDone: () -> Unit) {
     val s by vm.state.collectAsStateWithLifecycle()
     val areas by vm.areas.collectAsStateWithLifecycle()
     val subAreas by vm.subAreas.collectAsStateWithLifecycle()
-    val c = MsTheme.colors
 
     LaunchedEffect(s.saved) { if (s.saved) onDone() }
+
+    ProjectEditorContent(
+        s = s,
+        areas = areas,
+        subAreas = subAreas,
+        onName = vm::onName,
+        onColor = vm::onColor,
+        onArea = vm::onArea,
+        onSubArea = vm::onSubArea,
+        onNotes = vm::onNotes,
+        onArchived = vm::onArchived,
+        onSave = vm::save,
+        onDone = onDone,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [ProjectEditorScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun ProjectEditorContent(
+    s: ProjectEditorState,
+    areas: List<LifeArea>,
+    subAreas: List<String>,
+    onName: (String) -> Unit,
+    onColor: (Int) -> Unit,
+    onArea: (Long?) -> Unit,
+    onSubArea: (String) -> Unit,
+    onNotes: (String) -> Unit,
+    onArchived: (Boolean) -> Unit,
+    onSave: () -> Unit,
+    onDone: () -> Unit,
+) {
+    val c = MsTheme.colors
 
     Column(Modifier.fillMaxSize()) {
         TealTopBar(title = if (s.isEditing) "Edit Project" else "New Project", navigationIcon = Icons.Rounded.Close, onNavigate = onDone)
@@ -193,7 +266,7 @@ fun ProjectEditorScreen(projectId: Long?, onDone: () -> Unit) {
                 FieldLabel("Project name")
                 MsTextField(
                     value = s.name,
-                    onValueChange = vm::onName,
+                    onValueChange = onName,
                     placeholder = "e.g. Research Proposal",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
@@ -209,7 +282,7 @@ fun ProjectEditorScreen(projectId: Long?, onDone: () -> Unit) {
                                 .clip(CircleShape)
                                 .background(areaColor(i))
                                 .then(if (selected) Modifier.border(3.dp, c.textPrimary.copy(alpha = 0.7f), CircleShape) else Modifier)
-                                .clickable { vm.onColor(i) },
+                                .clickable { onColor(i) },
                             contentAlignment = Alignment.Center,
                         ) {
                             if (selected) Icon(Icons.Rounded.Check, contentDescription = "Selected", tint = Color.White, modifier = Modifier.size(18.dp))
@@ -219,15 +292,15 @@ fun ProjectEditorScreen(projectId: Long?, onDone: () -> Unit) {
             }
             Column {
                 FieldLabel("Life area")
-                AreaChooser(areas, s.areaId, vm::onArea)
+                AreaChooser(areas, s.areaId, onArea)
             }
             Column {
                 FieldLabel("Sub-area (optional)")
-                SuggestionField(s.subArea, vm::onSubArea, subAreas, placeholder = "e.g. Assignments")
+                SuggestionField(s.subArea, onSubArea, subAreas, placeholder = "e.g. Assignments")
             }
             Column {
                 FieldLabel("Notes (optional)")
-                MsTextField(value = s.notes, onValueChange = vm::onNotes, placeholder = "What does done look like?", singleLine = false, minLines = 3)
+                MsTextField(value = s.notes, onValueChange = onNotes, placeholder = "What does done look like?", singleLine = false, minLines = 3)
             }
             if (s.isEditing) {
                 MsCard(Modifier.fillMaxWidth()) {
@@ -236,16 +309,68 @@ fun ProjectEditorScreen(projectId: Long?, onDone: () -> Unit) {
                             Text("Archived", style = MaterialTheme.typography.bodyLarge, color = c.textPrimary)
                             Text("Hidden from the project list; tasks are kept.", style = MaterialTheme.typography.labelSmall, color = c.textTertiary)
                         }
-                        Switch(checked = s.archived, onCheckedChange = vm::onArchived, colors = msSwitchColors())
+                        Switch(checked = s.archived, onCheckedChange = onArchived, colors = msSwitchColors())
                     }
                 }
             }
         }
         PrimaryButton(
             text = if (s.isEditing) "Save Changes" else "Create Project",
-            onClick = vm::save,
+            onClick = onSave,
             enabled = s.canSave,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
         )
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+private val previewProjectDetail = ProjectDetailState(
+    project = PreviewProjectCards[0].project.copy(subArea = "Dissertation", notes = "Submitted, examined, defended."),
+    area = PreviewAreas[1],
+    rollup = PreviewProjectCards[0].rollup,
+    open = listOf(PreviewTaskLines[0], PreviewTaskLines[2]),
+    finished = listOf(TaskLine(PreviewTasks[4].copy(projectId = 1), TaskFlag.DoneOnTime, null)),
+)
+
+@Preview(name = "Project detail", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun ProjectDetailPreview() = PreviewScreen {
+    ProjectDetailContent(
+        state = previewProjectDetail, onToggleTask = {}, onSetArchived = {}, onDelete = {},
+        onBack = {}, onEdit = {}, onOpenTask = {}, onAddTask = {},
+    )
+}
+
+@Preview(name = "Project detail · dark", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun ProjectDetailDarkPreview() = PreviewScreen(dark = true) {
+    ProjectDetailContent(
+        state = previewProjectDetail, onToggleTask = {}, onSetArchived = {}, onDelete = {},
+        onBack = {}, onEdit = {}, onOpenTask = {}, onAddTask = {},
+    )
+}
+
+@Composable
+private fun ProjectEditorPreviewBody(s: ProjectEditorState) = ProjectEditorContent(
+    s = s, areas = PreviewAreas, subAreas = listOf("Dissertation", "Assignments"),
+    onName = {}, onColor = {}, onArea = {}, onSubArea = {}, onNotes = {}, onArchived = {},
+    onSave = {}, onDone = {},
+)
+
+@Preview(name = "Project editor", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun ProjectEditorPreview() = PreviewScreen {
+    ProjectEditorPreviewBody(
+        ProjectEditorState(
+            id = 1, name = "Research Proposal", areaId = 2, subArea = "Dissertation", colorIndex = 1,
+            notes = "Submitted, examined, defended.", createdAt = PreviewToday.minusDays(30),
+        ),
+    )
+}
+
+@Preview(name = "Project editor · new project", showBackground = true, widthDp = 393, heightDp = 900)
+@Composable
+private fun ProjectEditorNewPreview() = PreviewScreen {
+    ProjectEditorPreviewBody(ProjectEditorState())
 }

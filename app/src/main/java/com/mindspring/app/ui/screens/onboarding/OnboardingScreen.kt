@@ -40,10 +40,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mindspring.app.R
 import com.mindspring.app.ui.components.GhostButton
 import com.mindspring.app.ui.components.PrimaryButton
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import kotlinx.coroutines.launch
@@ -146,4 +148,18 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             )
         }
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Onboarding", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun OnboardingScreenPreview() = PreviewScreen {
+    OnboardingScreen(onFinish = {})
+}
+
+@Preview(name = "Onboarding · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun OnboardingScreenDarkPreview() = PreviewScreen(dark = true) {
+    OnboardingScreen(onFinish = {})
 }

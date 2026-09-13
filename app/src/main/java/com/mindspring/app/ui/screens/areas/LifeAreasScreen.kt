@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,6 +69,9 @@ import com.mindspring.app.ui.components.ProgressRing
 import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.Tint
 import com.mindspring.app.ui.components.appear
+import com.mindspring.app.ui.preview.PreviewAreaRollups
+import com.mindspring.app.ui.preview.PreviewMonth
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.AreaPalette
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
@@ -100,6 +104,30 @@ fun LifeAreasScreen(onBack: () -> Unit) {
     val vm = appViewModel { LifeAreasViewModel(it) }
     val rollups by vm.rollups.collectAsStateWithLifecycle()
     val month by vm.month.collectAsStateWithLifecycle()
+
+    LifeAreasContent(
+        rollups = rollups,
+        month = month,
+        onMonthChange = { vm.month.value = it },
+        onSave = vm::save,
+        onDelete = { vm.delete(it) },
+        onBack = onBack,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [LifeAreasScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun LifeAreasContent(
+    rollups: List<AreaRollup>?,
+    month: YearMonth,
+    onMonthChange: (YearMonth) -> Unit,
+    onSave: (LifeArea) -> Unit,
+    onDelete: (Long) -> Unit,
+    onBack: () -> Unit,
+) {
     val c = MsTheme.colors
     var editing by rememberSaveable { mutableStateOf<Long?>(null) }
     var adding by rememberSaveable { mutableStateOf(false) }
@@ -118,7 +146,7 @@ fun LifeAreasScreen(onBack: () -> Unit) {
                         color = c.textSecondary,
                         modifier = Modifier.padding(horizontal = 4.dp),
                     )
-                    MonthSwitcher(month, { vm.month.value = it })
+                    MonthSwitcher(month, onMonthChange)
                 }
             }
             items(rollups.orEmpty(), key = { it.area?.id ?: -1L }) { r ->
@@ -132,15 +160,15 @@ fun LifeAreasScreen(onBack: () -> Unit) {
         AreaDialog(
             initial = areaToEdit,
             onDismiss = { editing = null },
-            onSave = { vm.save(it); editing = null },
-            onDelete = { vm.delete(areaToEdit.id); editing = null },
+            onSave = { onSave(it); editing = null },
+            onDelete = { onDelete(areaToEdit.id); editing = null },
         )
     }
     if (adding) {
         AreaDialog(
             initial = LifeArea(name = "", colorIndex = rollups?.size ?: 0),
             onDismiss = { adding = false },
-            onSave = { vm.save(it); adding = false },
+            onSave = { onSave(it); adding = false },
             onDelete = null,
         )
     }
@@ -262,5 +290,25 @@ private fun AreaDialog(initial: LifeArea, onDismiss: () -> Unit, onSave: (LifeAr
         },
         confirmButton = { TextButton(onClick = { onSave(initial.copy(name = name.trim(), colorIndex = color)) }, enabled = name.isNotBlank()) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Life areas", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun LifeAreasPreview() = PreviewScreen {
+    LifeAreasContent(
+        rollups = PreviewAreaRollups, month = PreviewMonth, onMonthChange = {},
+        onSave = {}, onDelete = {}, onBack = {},
+    )
+}
+
+@Preview(name = "Life areas · dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun LifeAreasDarkPreview() = PreviewScreen(dark = true) {
+    LifeAreasContent(
+        rollups = PreviewAreaRollups, month = PreviewMonth, onMonthChange = {},
+        onSave = {}, onDelete = {}, onBack = {},
     )
 }

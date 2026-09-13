@@ -162,7 +162,42 @@ data class HabitEditorState(
     )
 }
 
-class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : ViewModel() {
+/**
+ * Everything the habit editor can do, named apart from the ViewModel that implements it, so the
+ * editor composable can be rendered in a @Preview against a no-op stand-in.
+ */
+interface HabitEditorActions {
+    fun onName(v: String)
+    fun onArea(v: Long?)
+    fun onSubArea(v: String)
+    fun onIcon(v: HabitIcon)
+    fun onFrequency(v: HabitFrequency)
+    fun onToggleDay(d: DayOfWeek)
+    fun onTarget(v: String)
+    fun onReminderEnabled(v: Boolean)
+    fun onReminderTime(v: LocalTime)
+    fun onReminderStyle(v: AlertStyle)
+    fun onActive(v: Boolean)
+    fun save()
+
+    /** Does nothing; for previews, where there is no data layer to write to. */
+    object None : HabitEditorActions {
+        override fun onName(v: String) = Unit
+        override fun onArea(v: Long?) = Unit
+        override fun onSubArea(v: String) = Unit
+        override fun onIcon(v: HabitIcon) = Unit
+        override fun onFrequency(v: HabitFrequency) = Unit
+        override fun onToggleDay(d: DayOfWeek) = Unit
+        override fun onTarget(v: String) = Unit
+        override fun onReminderEnabled(v: Boolean) = Unit
+        override fun onReminderTime(v: LocalTime) = Unit
+        override fun onReminderStyle(v: AlertStyle) = Unit
+        override fun onActive(v: Boolean) = Unit
+        override fun save() = Unit
+    }
+}
+
+class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : ViewModel(), HabitEditorActions {
     private val _state = MutableStateFlow(HabitEditorState())
     val state: StateFlow<HabitEditorState> = _state
 
@@ -187,19 +222,19 @@ class HabitEditorViewModel(private val app: AppContainer, habitId: Long?) : View
         }
     }
 
-    fun onName(v: String) = _state.update { it.copy(name = v.take(60)) }
-    fun onArea(v: Long?) = _state.update { it.copy(areaId = v) }
-    fun onSubArea(v: String) = _state.update { it.copy(subArea = v) }
-    fun onIcon(v: HabitIcon) = _state.update { it.copy(icon = v) }
-    fun onFrequency(v: HabitFrequency) = _state.update { it.copy(frequency = v) }
-    fun onToggleDay(d: DayOfWeek) = _state.update { s -> s.copy(customDays = if (d in s.customDays) s.customDays - d else s.customDays + d) }
-    fun onTarget(v: String) = _state.update { it.copy(target = v.take(24)) }
-    fun onReminderEnabled(v: Boolean) = _state.update { it.copy(reminderEnabled = v) }
-    fun onReminderTime(v: LocalTime) = _state.update { it.copy(reminderTime = v) }
-    fun onReminderStyle(v: AlertStyle) = _state.update { it.copy(reminderStyle = v) }
-    fun onActive(v: Boolean) = _state.update { it.copy(active = v) }
+    override fun onName(v: String) = _state.update { it.copy(name = v.take(60)) }
+    override fun onArea(v: Long?) = _state.update { it.copy(areaId = v) }
+    override fun onSubArea(v: String) = _state.update { it.copy(subArea = v) }
+    override fun onIcon(v: HabitIcon) = _state.update { it.copy(icon = v) }
+    override fun onFrequency(v: HabitFrequency) = _state.update { it.copy(frequency = v) }
+    override fun onToggleDay(d: DayOfWeek) = _state.update { s -> s.copy(customDays = if (d in s.customDays) s.customDays - d else s.customDays + d) }
+    override fun onTarget(v: String) = _state.update { it.copy(target = v.take(24)) }
+    override fun onReminderEnabled(v: Boolean) = _state.update { it.copy(reminderEnabled = v) }
+    override fun onReminderTime(v: LocalTime) = _state.update { it.copy(reminderTime = v) }
+    override fun onReminderStyle(v: AlertStyle) = _state.update { it.copy(reminderStyle = v) }
+    override fun onActive(v: Boolean) = _state.update { it.copy(active = v) }
 
-    fun save() {
+    override fun save() {
         val s = _state.value
         if (!s.canSave) return
         viewModelScope.launch {

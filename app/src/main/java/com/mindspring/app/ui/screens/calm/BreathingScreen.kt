@@ -49,8 +49,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mindspring.app.ui.components.PrimaryButton
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Amber
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.util.Fmt
@@ -259,4 +261,18 @@ private fun RoundControl(
             Icon(icon, contentDescription = description, tint = Color.White, modifier = Modifier.size((sizeDp * 0.42f).dp))
         }
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Preview(name = "Breathing · box", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun BreathingScreenPreview() = PreviewScreen {
+    BreathingScreen(technique = TECHNIQUE_BOX, onClose = {})
+}
+
+@Preview(name = "Breathing · calm", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun BreathingCalmPreview() = PreviewScreen(dark = true) {
+    BreathingScreen(technique = TECHNIQUE_CALM, onClose = {})
 }

@@ -44,8 +44,10 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.HabitFrequency
@@ -80,6 +83,8 @@ import com.mindspring.app.ui.components.appear
 import com.mindspring.app.ui.components.tint
 import com.mindspring.app.ui.components.vector
 import com.mindspring.app.ui.screens.home.TodayHabit
+import com.mindspring.app.ui.preview.PreviewHabitsState
+import com.mindspring.app.ui.preview.PreviewScreen
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.MsTheme
 import com.mindspring.app.ui.theme.areaColor
@@ -96,6 +101,43 @@ fun HabitsScreen(
     val vm = appViewModel { HabitsViewModel(it) }
     val s by vm.state.collectAsStateWithLifecycle()
     val view by vm.view.collectAsStateWithLifecycle()
+    val weekOffset by vm.weekOffset.collectAsStateWithLifecycle()
+
+    HabitsContent(
+        userName = userName,
+        s = s,
+        view = view,
+        weekOffset = weekOffset,
+        onViewChange = { vm.view.value = it },
+        onWeekOffsetChange = { vm.weekOffset.value = it },
+        onToggleDone = vm::toggleDone,
+        onToggleSkip = vm::toggleSkip,
+        onCycleCell = vm::cycle,
+        onOpenHabit = onOpenHabit,
+        onAddHabit = onAddHabit,
+        onOpenProfile = onOpenProfile,
+    )
+}
+
+/**
+ * The screen as pure state and callbacks, so it renders in a @Preview without a ViewModel behind
+ * it. [HabitsScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@Composable
+fun HabitsContent(
+    userName: String,
+    s: HabitsState,
+    view: HabitsView,
+    weekOffset: Long,
+    onViewChange: (HabitsView) -> Unit,
+    onWeekOffsetChange: (Long) -> Unit,
+    onToggleDone: (TodayHabit) -> Unit,
+    onToggleSkip: (TodayHabit) -> Unit,
+    onCycleCell: (Long, WeekCell) -> Unit,
+    onOpenHabit: (Long) -> Unit,
+    onAddHabit: () -> Unit,
+    onOpenProfile: () -> Unit,
+) {
     val c = MsTheme.colors
 
     Box(Modifier.fillMaxSize()) {
@@ -113,7 +155,7 @@ fun HabitsScreen(
                     color = c.textSecondary,
                 )
                 Spacer(Modifier.height(12.dp))
-                SegmentedTabs(HabitsView.entries, view, { vm.view.value = it }, { it.label })
+                SegmentedTabs(HabitsView.entries, view, onViewChange, { it.label })
             }
             AnimatedContent(
                 targetState = view,
@@ -125,8 +167,8 @@ fun HabitsScreen(
                 modifier = Modifier.weight(1f),
             ) { v ->
                 when (v) {
-                    HabitsView.Today -> TodayView(s, vm, onOpenHabit, onAddHabit)
-                    HabitsView.Week -> WeekView(s, vm)
+                    HabitsView.Today -> TodayView(s, onToggleDone, onToggleSkip, onOpenHabit, onAddHabit)
+                    HabitsView.Week -> WeekView(s, weekOffset, onWeekOffsetChange, onCycleCell)
                     HabitsView.All -> AllView(s, onOpenHabit)
                 }
             }
@@ -145,7 +187,13 @@ fun HabitsScreen(
 }
 
 @Composable
-private fun TodayView(s: HabitsState, vm: HabitsViewModel, onOpenHabit: (Long) -> Unit, onAddHabit: () -> Unit) {
+private fun TodayView(
+    s: HabitsState,
+    onToggleDone: (TodayHabit) -> Unit,
+    onToggleSkip: (TodayHabit) -> Unit,
+    onOpenHabit: (Long) -> Unit,
+    onAddHabit: () -> Unit,
+) {
     val c = MsTheme.colors
     val snackbar = LocalSnackbar.current
     val scope = rememberCoroutineScope()
@@ -194,10 +242,10 @@ private fun TodayView(s: HabitsState, vm: HabitsViewModel, onOpenHabit: (Long) -
                             habit = item.habit,
                             tick = item.tick(),
                             onTick = {
-                                if (item.mark == MarkState.Skipped) vm.toggleSkip(item) else vm.toggleDone(item)
+                                if (item.mark == MarkState.Skipped) onToggleSkip(item) else onToggleDone(item)
                             },
                             onSkip = {
-                                vm.toggleSkip(item)
+                                onToggleSkip(item)
                                 if (item.mark != MarkState.Skipped) scope.launch { snackbar.showSnackbar("Skipped ${item.habit.name} for today") }
                             },
                             onClick = { onOpenHabit(item.habit.id) },
@@ -222,15 +270,19 @@ private fun TodayHabit.tick(): TickState = when {
 
 /** The workbook's month grid, one week at a time so every cell is big enough to tap. */
 @Composable
-private fun WeekView(s: HabitsState, vm: HabitsViewModel) {
+private fun WeekView(
+    s: HabitsState,
+    offset: Long,
+    onOffsetChange: (Long) -> Unit,
+    onCycleCell: (Long, WeekCell) -> Unit,
+) {
     val c = MsTheme.colors
-    val offset by vm.weekOffset.collectAsStateWithLifecycle()
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Dimens.screen, end = Dimens.screen, top = 4.dp, bottom = 104.dp),
         verticalArrangement = Arrangement.spacedBy(Dimens.stackMd),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { vm.weekOffset.value = offset - 1 }) {
+            IconButton(onClick = { onOffsetChange(offset - 1) }) {
                 Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, contentDescription = "Previous week", tint = c.tealInk)
             }
             Text(
@@ -240,7 +292,7 @@ private fun WeekView(s: HabitsState, vm: HabitsViewModel) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
             )
-            IconButton(onClick = { vm.weekOffset.value = offset + 1 }, enabled = offset < 0) {
+            IconButton(onClick = { onOffsetChange(offset + 1) }, enabled = offset < 0) {
                 Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = "Next week", tint = if (offset < 0) c.tealInk else c.textTertiary.copy(alpha = 0.4f))
             }
         }
@@ -286,7 +338,7 @@ private fun WeekView(s: HabitsState, vm: HabitsViewModel) {
                 Row(Modifier.fillMaxWidth()) {
                     row.cells.forEach { cell ->
                         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            GridCell(cell, anyDay = !row.habit.frequency.isDayBased) { vm.cycle(row.habit.id, cell) }
+                            GridCell(cell, anyDay = !row.habit.frequency.isDayBased) { onCycleCell(row.habit.id, cell) }
                         }
                     }
                 }
@@ -473,3 +525,32 @@ private fun SummaryRow(item: HabitSummary, onOpenHabit: (Long) -> Unit) {
         }
     }
 }
+
+// --- Previews -------------------------------------------------------------------------------
+
+@Composable
+private fun HabitsPreview(dark: Boolean = false, view: HabitsView) = PreviewScreen(dark) {
+    CompositionLocalProvider(LocalSnackbar provides SnackbarHostState()) {
+        HabitsContent(
+            userName = "Asan", s = PreviewHabitsState, view = view, weekOffset = 0L,
+            onViewChange = {}, onWeekOffsetChange = {}, onToggleDone = {}, onToggleSkip = {},
+            onCycleCell = { _, _ -> }, onOpenHabit = {}, onAddHabit = {}, onOpenProfile = {},
+        )
+    }
+}
+
+@Preview(name = "Habits · today", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitsTodayPreview() = HabitsPreview(view = HabitsView.Today)
+
+@Preview(name = "Habits · week grid", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitsWeekPreview() = HabitsPreview(view = HabitsView.Week)
+
+@Preview(name = "Habits · all", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitsAllPreview() = HabitsPreview(view = HabitsView.All)
+
+@Preview(name = "Habits · today dark", showBackground = true, widthDp = 393, heightDp = 830)
+@Composable
+private fun HabitsTodayDarkPreview() = HabitsPreview(dark = true, view = HabitsView.Today)

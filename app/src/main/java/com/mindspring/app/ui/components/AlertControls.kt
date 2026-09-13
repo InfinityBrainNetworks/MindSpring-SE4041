@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -42,10 +43,12 @@ import com.mindspring.app.ui.theme.MsTheme
 fun AlertStylePicker(style: AlertStyle, onChange: (AlertStyle) -> Unit, modifier: Modifier = Modifier, passed: Boolean = false) {
     val c = MsTheme.colors
     val context = LocalContext.current
+    // An IDE preview has no real notification settings to read, so assume the happy path there.
+    val inPreview = LocalInspectionMode.current
     var refresh by remember { mutableIntStateOf(0) }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
-    val notificationsOn = remember(refresh) { AlertAccess.notificationsAllowed(context) }
-    val lockScreenOn = remember(refresh) { AlertAccess.fullScreenAllowed(context) }
+    if (!inPreview) LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
+    val notificationsOn = remember(refresh) { inPreview || AlertAccess.notificationsAllowed(context) }
+    val lockScreenOn = remember(refresh) { inPreview || AlertAccess.fullScreenAllowed(context) }
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SegmentedTabs(AlertStyle.entries, style, onChange, { it.label })
@@ -65,6 +68,8 @@ fun AlertStylePicker(style: AlertStyle, onChange: (AlertStyle) -> Unit, modifier
 /** Asks for notification permission (Android 13+) if it has not been given; call when an alert is switched on. */
 @Composable
 fun rememberAskForNotifications(): () -> Unit {
+    // No activity backs an IDE preview, so there is no result registry to launch a request from.
+    if (LocalInspectionMode.current) return {}
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     return {

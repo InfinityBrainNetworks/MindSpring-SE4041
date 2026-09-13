@@ -130,7 +130,54 @@ data class TaskEditorState(
     )
 }
 
-class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectId: Long?) : ViewModel() {
+/**
+ * Everything the task editor can do, named apart from the ViewModel that implements it, so the
+ * editor composable can be rendered in a @Preview against a no-op stand-in.
+ */
+interface TaskEditorActions {
+    fun onTitle(v: String)
+    fun onNotes(v: String)
+    fun onArea(v: Long?)
+    fun onSubArea(v: String)
+    fun onStart(v: LocalDate?)
+    fun onDue(v: LocalDate?)
+    fun onPriority(v: Priority)
+    fun onRepeat(v: Repeat)
+    fun onDoneOn(v: LocalDate?)
+    fun onAlertEnabled(on: Boolean)
+    fun onAlertDate(d: LocalDate)
+    fun onAlertTime(t: LocalTime)
+    fun onAlertAt(at: LocalDateTime)
+    fun onAlertStyle(v: AlertStyle)
+    fun onStatus(v: TaskStatus)
+    fun onProject(project: Project?)
+    fun save()
+    fun delete(then: () -> Unit)
+
+    /** Does nothing; for previews, where there is no data layer to write to. */
+    object None : TaskEditorActions {
+        override fun onTitle(v: String) = Unit
+        override fun onNotes(v: String) = Unit
+        override fun onArea(v: Long?) = Unit
+        override fun onSubArea(v: String) = Unit
+        override fun onStart(v: LocalDate?) = Unit
+        override fun onDue(v: LocalDate?) = Unit
+        override fun onPriority(v: Priority) = Unit
+        override fun onRepeat(v: Repeat) = Unit
+        override fun onDoneOn(v: LocalDate?) = Unit
+        override fun onAlertEnabled(on: Boolean) = Unit
+        override fun onAlertDate(d: LocalDate) = Unit
+        override fun onAlertTime(t: LocalTime) = Unit
+        override fun onAlertAt(at: LocalDateTime) = Unit
+        override fun onAlertStyle(v: AlertStyle) = Unit
+        override fun onStatus(v: TaskStatus) = Unit
+        override fun onProject(project: Project?) = Unit
+        override fun save() = Unit
+        override fun delete(then: () -> Unit) = Unit
+    }
+}
+
+class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectId: Long?) : ViewModel(), TaskEditorActions {
     private val _state = MutableStateFlow(TaskEditorState(projectId = projectId))
     val state: StateFlow<TaskEditorState> = _state
 
@@ -156,31 +203,31 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
         }
     }
 
-    fun onTitle(v: String) = _state.update { it.copy(title = v.take(120)) }
-    fun onNotes(v: String) = _state.update { it.copy(notes = v.take(1000)) }
-    fun onArea(v: Long?) = _state.update { it.copy(areaId = v) }
-    fun onSubArea(v: String) = _state.update { it.copy(subArea = v) }
-    fun onStart(v: LocalDate?) = _state.update { it.copy(start = v) }
-    fun onDue(v: LocalDate?) = _state.update { it.copy(due = v) }
-    fun onPriority(v: Priority) = _state.update { it.copy(priority = v) }
-    fun onRepeat(v: Repeat) = _state.update { it.copy(repeat = v) }
-    fun onDoneOn(v: LocalDate?) = _state.update { it.copy(doneOn = v) }
+    override fun onTitle(v: String) = _state.update { it.copy(title = v.take(120)) }
+    override fun onNotes(v: String) = _state.update { it.copy(notes = v.take(1000)) }
+    override fun onArea(v: Long?) = _state.update { it.copy(areaId = v) }
+    override fun onSubArea(v: String) = _state.update { it.copy(subArea = v) }
+    override fun onStart(v: LocalDate?) = _state.update { it.copy(start = v) }
+    override fun onDue(v: LocalDate?) = _state.update { it.copy(due = v) }
+    override fun onPriority(v: Priority) = _state.update { it.copy(priority = v) }
+    override fun onRepeat(v: Repeat) = _state.update { it.copy(repeat = v) }
+    override fun onDoneOn(v: LocalDate?) = _state.update { it.copy(doneOn = v) }
 
-    fun onAlertEnabled(on: Boolean) = _state.update { s ->
+    override fun onAlertEnabled(on: Boolean) = _state.update { s ->
         s.copy(alertAt = if (on) s.alertAt ?: defaultAlert(s.due) else null)
     }
 
-    fun onAlertDate(d: LocalDate) = _state.update { s -> s.copy(alertAt = d.atTime(s.alertAt?.toLocalTime() ?: DEFAULT_ALERT_TIME)) }
-    fun onAlertTime(t: LocalTime) = _state.update { s -> s.copy(alertAt = (s.alertAt?.toLocalDate() ?: LocalDate.now()).atTime(t)) }
-    fun onAlertAt(at: LocalDateTime) = _state.update { it.copy(alertAt = at) }
-    fun onAlertStyle(v: AlertStyle) = _state.update { it.copy(alertStyle = v) }
+    override fun onAlertDate(d: LocalDate) = _state.update { s -> s.copy(alertAt = d.atTime(s.alertAt?.toLocalTime() ?: DEFAULT_ALERT_TIME)) }
+    override fun onAlertTime(t: LocalTime) = _state.update { s -> s.copy(alertAt = (s.alertAt?.toLocalDate() ?: LocalDate.now()).atTime(t)) }
+    override fun onAlertAt(at: LocalDateTime) = _state.update { it.copy(alertAt = at) }
+    override fun onAlertStyle(v: AlertStyle) = _state.update { it.copy(alertStyle = v) }
 
-    fun onStatus(v: TaskStatus) = _state.update {
+    override fun onStatus(v: TaskStatus) = _state.update {
         it.copy(status = v, doneOn = if (v == TaskStatus.Done) it.doneOn ?: LocalDate.now() else null)
     }
 
     /** Picking a project files the task where the project lives, unless it was filed already. */
-    fun onProject(project: Project?) = _state.update { s ->
+    override fun onProject(project: Project?) = _state.update { s ->
         if (project == null) s.copy(projectId = null)
         else s.copy(
             projectId = project.id,
@@ -189,7 +236,7 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
         )
     }
 
-    fun save() {
+    override fun save() {
         val s = _state.value
         if (!s.canSave) {
             _state.update { it.copy(showErrors = true) }
@@ -201,7 +248,7 @@ class TaskEditorViewModel(private val app: AppContainer, taskId: Long?, projectI
         }
     }
 
-    fun delete(then: () -> Unit) {
+    override fun delete(then: () -> Unit) {
         val id = _state.value.id
         if (id == 0L) return then()
         viewModelScope.launch {

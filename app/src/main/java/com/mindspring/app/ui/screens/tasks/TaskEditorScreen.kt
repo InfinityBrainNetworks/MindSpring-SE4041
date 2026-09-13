@@ -45,9 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mindspring.app.data.model.AlertStyle
+import com.mindspring.app.data.model.LifeArea
+import com.mindspring.app.data.model.Project
 import com.mindspring.app.data.model.Priority
 import com.mindspring.app.data.model.Repeat
 import com.mindspring.app.data.model.TaskStatus
@@ -70,6 +73,10 @@ import com.mindspring.app.ui.components.TealTopBar
 import com.mindspring.app.ui.components.TimePickerDialog
 import com.mindspring.app.ui.components.rememberAskForNotifications
 import com.mindspring.app.ui.components.msSwitchColors
+import com.mindspring.app.ui.preview.PreviewAreas
+import com.mindspring.app.ui.preview.PreviewProjects
+import com.mindspring.app.ui.preview.PreviewScreen
+import com.mindspring.app.ui.preview.PreviewToday
 import com.mindspring.app.ui.theme.Dimens
 import com.mindspring.app.ui.theme.InputShape
 import com.mindspring.app.ui.theme.MsTheme
@@ -89,11 +96,29 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
     val areas by vm.areas.collectAsStateWithLifecycle()
     val projects by vm.projects.collectAsStateWithLifecycle()
     val subAreas by vm.subAreas.collectAsStateWithLifecycle()
+
+    LaunchedEffect(s.saved) { if (s.saved) onDone() }
+
+    TaskEditorContent(s, areas, projects, subAreas, vm, onDone)
+}
+
+/**
+ * The screen as pure state plus an actions object, so it renders in a @Preview without a ViewModel
+ * behind it. [TaskEditorScreen] is the thin wrapper that supplies both from the app's data.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TaskEditorContent(
+    s: TaskEditorState,
+    areas: List<LifeArea>,
+    projects: List<Project>,
+    subAreas: List<String>,
+    actions: TaskEditorActions,
+    onDone: () -> Unit,
+) {
     val c = MsTheme.colors
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
-
-    LaunchedEffect(s.saved) { if (s.saved) onDone() }
 
     Column(Modifier.fillMaxSize()) {
         TealTopBar(
@@ -114,7 +139,7 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
                 FieldLabel("Task")
                 MsTextField(
                     value = s.title,
-                    onValueChange = vm::onTitle,
+                    onValueChange = actions::onTitle,
                     placeholder = "e.g. Submit the final APK",
                     singleLine = false,
                     isError = s.showErrors && s.titleError != null,
@@ -136,7 +161,7 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
                 FieldLabel("Deadline")
                 DateField(
                     value = s.due,
-                    onChange = vm::onDue,
+                    onChange = actions::onDue,
                     emptyText = "No deadline",
                     quick = listOf(
                         "Today" to today,
@@ -150,26 +175,26 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
 
             Column {
                 FieldLabel("Can start from (optional)")
-                DateField(value = s.start, onChange = vm::onStart, emptyText = "Any time", quick = listOf("Today" to today, "Tomorrow" to today.plusDays(1)))
+                DateField(value = s.start, onChange = actions::onStart, emptyText = "Any time", quick = listOf("Today" to today, "Tomorrow" to today.plusDays(1)))
                 s.dateError?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = c.danger, modifier = Modifier.padding(start = 4.dp, top = 6.dp)) }
             }
 
-            AlertSection(s, vm)
+            AlertSection(s, actions)
 
             Column {
                 FieldLabel("Priority")
-                SegmentedTabs(Priority.entries, s.priority, vm::onPriority, { "${it.short} · ${it.label}" })
+                SegmentedTabs(Priority.entries, s.priority, actions::onPriority, { "${it.short} · ${it.label}" })
             }
 
             Column {
                 FieldLabel("Status")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TaskStatus.entries.forEach { st -> SmallChip(st.label, selected = st == s.status, onClick = { vm.onStatus(st) }) }
+                    TaskStatus.entries.forEach { st -> SmallChip(st.label, selected = st == s.status, onClick = { actions.onStatus(st) }) }
                 }
                 AnimatedVisibility(s.status == TaskStatus.Done) {
                     Column(Modifier.padding(top = 12.dp)) {
                         FieldLabel("Done on")
-                        DateField(value = s.doneOn, onChange = vm::onDoneOn, emptyText = "Pick the day you finished")
+                        DateField(value = s.doneOn, onChange = actions::onDoneOn, emptyText = "Pick the day you finished")
                     }
                 }
             }
@@ -177,9 +202,9 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
             Column {
                 FieldLabel("Project")
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DotChip("None", c.textTertiary, selected = s.projectId == null, onClick = { vm.onProject(null) })
+                    DotChip("None", c.textTertiary, selected = s.projectId == null, onClick = { actions.onProject(null) })
                     projects.filter { !it.archived || it.id == s.projectId }.forEach { p ->
-                        DotChip(p.name, areaColor(p.colorIndex), selected = p.id == s.projectId, onClick = { vm.onProject(p) })
+                        DotChip(p.name, areaColor(p.colorIndex), selected = p.id == s.projectId, onClick = { actions.onProject(p) })
                     }
                 }
                 if (projects.isEmpty()) {
@@ -190,7 +215,7 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
             Column {
                 FieldLabel("Repeat")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Repeat.entries.forEach { r -> SmallChip(r.label, selected = r == s.repeat, onClick = { vm.onRepeat(r) }) }
+                    Repeat.entries.forEach { r -> SmallChip(r.label, selected = r == s.repeat, onClick = { actions.onRepeat(r) }) }
                 }
                 if (s.repeat != Repeat.None) {
                     Text(
@@ -204,22 +229,22 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
 
             Column {
                 FieldLabel("Life area")
-                AreaChooser(areas, s.areaId, vm::onArea)
+                AreaChooser(areas, s.areaId, actions::onArea)
             }
 
             Column {
                 FieldLabel("Sub-area (optional)")
-                SuggestionField(s.subArea, vm::onSubArea, subAreas, placeholder = "e.g. Assignments")
+                SuggestionField(s.subArea, actions::onSubArea, subAreas, placeholder = "e.g. Assignments")
             }
 
             Column {
                 FieldLabel("Notes (optional)")
-                MsTextField(value = s.notes, onValueChange = vm::onNotes, placeholder = "Anything worth remembering", singleLine = false, minLines = 3)
+                MsTextField(value = s.notes, onValueChange = actions::onNotes, placeholder = "Anything worth remembering", singleLine = false, minLines = 3)
             }
         }
         PrimaryButton(
             text = if (s.isEditing) "Save Changes" else "Add Task",
-            onClick = vm::save,
+            onClick = actions::save,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Dimens.screen, vertical = Dimens.stackMd),
         )
     }
@@ -229,7 +254,7 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
             onDismissRequest = { confirmDelete = false },
             title = { Text("Delete this task?") },
             text = { Text("To keep it on record without counting it as a failure, set its status to Dropped instead.") },
-            confirmButton = { TextButton(onClick = { confirmDelete = false; vm.delete(onDone) }) { Text("Delete", color = c.danger) } },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; actions.delete(onDone) }) { Text("Delete", color = c.danger) } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
     }
@@ -240,7 +265,7 @@ fun TaskEditorScreen(taskId: Long?, projectId: Long?, onDone: () -> Unit) {
  * the usual choices; the pills open the full date and time pickers.
  */
 @Composable
-private fun AlertSection(s: TaskEditorState, vm: TaskEditorViewModel) {
+private fun AlertSection(s: TaskEditorState, actions: TaskEditorActions) {
     val c = MsTheme.colors
     var pickDate by rememberSaveable { mutableStateOf(false) }
     var pickTime by rememberSaveable { mutableStateOf(false) }
@@ -260,7 +285,7 @@ private fun AlertSection(s: TaskEditorState, vm: TaskEditorViewModel) {
                 .background(c.card)
                 .clickable {
                     if (!on) askForNotifications()
-                    vm.onAlertEnabled(!on)
+                    actions.onAlertEnabled(!on)
                 }
                 .padding(start = 14.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -284,7 +309,7 @@ private fun AlertSection(s: TaskEditorState, vm: TaskEditorViewModel) {
                 checked = on,
                 onCheckedChange = { enable ->
                     if (enable) askForNotifications()
-                    vm.onAlertEnabled(enable)
+                    actions.onAlertEnabled(enable)
                 },
                 colors = msSwitchColors(),
             )
@@ -305,19 +330,19 @@ private fun AlertSection(s: TaskEditorState, vm: TaskEditorViewModel) {
                     s.due?.takeIf { it.isAfter(today.plusDays(1)) }?.let { add("Deadline 9 AM" to it.atTime(9, 0)) }
                 }
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    quick.forEach { (label, time) -> SmallChip(label, selected = at == time, onClick = { vm.onAlertAt(time) }) }
+                    quick.forEach { (label, time) -> SmallChip(label, selected = at == time, onClick = { actions.onAlertAt(time) }) }
                 }
-                AlertStylePicker(s.alertStyle, vm::onAlertStyle, passed = s.alertPassed(now))
+                AlertStylePicker(s.alertStyle, actions::onAlertStyle, passed = s.alertPassed(now))
             }
         }
     }
 
     if (pickDate) {
-        MsDatePicker(initial = alertAt?.toLocalDate() ?: today, onDismiss = { pickDate = false }) { vm.onAlertDate(it); pickDate = false }
+        MsDatePicker(initial = alertAt?.toLocalDate() ?: today, onDismiss = { pickDate = false }) { actions.onAlertDate(it); pickDate = false }
     }
     if (pickTime) {
         TimePickerDialog(alertAt?.toLocalTime() ?: TaskEditorViewModel.DEFAULT_ALERT_TIME, onDismiss = { pickTime = false }, title = "Alert time") {
-            vm.onAlertTime(it)
+            actions.onAlertTime(it)
             pickTime = false
         }
     }
@@ -334,4 +359,50 @@ private fun PickerPill(icon: ImageVector, text: String, modifier: Modifier, onCl
         Spacer(Modifier.width(10.dp))
         Text(text, style = MaterialTheme.typography.bodyLarge, color = c.textPrimary)
     }
+}
+
+// --- Previews -------------------------------------------------------------------------------
+
+private val previewEditorState = TaskEditorState(
+    id = 1,
+    title = "Draft the methodology chapter",
+    notes = "Cover sampling and the analysis plan.",
+    areaId = 2,
+    subArea = "Dissertation",
+    projectId = 1,
+    due = PreviewToday.plusDays(2),
+    priority = Priority.A,
+    status = TaskStatus.InProgress,
+    createdAt = PreviewToday.minusDays(9),
+    alertAt = PreviewToday.plusDays(2).atTime(9, 0),
+)
+
+@Preview(name = "Task editor", showBackground = true, widthDp = 393, heightDp = 1200)
+@Composable
+private fun TaskEditorPreview() = PreviewScreen {
+    TaskEditorContent(
+        s = previewEditorState, areas = PreviewAreas, projects = PreviewProjects,
+        subAreas = listOf("Dissertation", "Assignments", "Reading"),
+        actions = TaskEditorActions.None, onDone = {},
+    )
+}
+
+@Preview(name = "Task editor · new task", showBackground = true, widthDp = 393, heightDp = 1200)
+@Composable
+private fun TaskEditorNewPreview() = PreviewScreen {
+    TaskEditorContent(
+        s = TaskEditorState(), areas = PreviewAreas, projects = PreviewProjects,
+        subAreas = listOf("Dissertation", "Assignments"),
+        actions = TaskEditorActions.None, onDone = {},
+    )
+}
+
+@Preview(name = "Task editor · dark", showBackground = true, widthDp = 393, heightDp = 1200)
+@Composable
+private fun TaskEditorDarkPreview() = PreviewScreen(dark = true) {
+    TaskEditorContent(
+        s = previewEditorState, areas = PreviewAreas, projects = PreviewProjects,
+        subAreas = listOf("Dissertation", "Assignments"),
+        actions = TaskEditorActions.None, onDone = {},
+    )
 }
